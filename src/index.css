@@ -1,0 +1,251 @@
+@import 'tailwindcss';
+
+/* Class-based dark mode: the toggle must win over the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Surface & ink roles.
+
+   Components are written against these roles rather than `dark:` variants on
+   every node, so a theme swap happens in one place and the glass recipe stays
+   identical in both modes.
+   --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+
+  --solv-canvas: #eef1f9;
+  --solv-ink: #0a0d1c;
+  --solv-ink-muted: #4b5570;
+  --solv-ink-faint: #7d879f;
+
+  --solv-glass: rgb(255 255 255 / 0.58);
+  --solv-glass-soft: rgb(255 255 255 / 0.36);
+  --solv-glass-strong: rgb(255 255 255 / 0.84);
+
+  --solv-hairline: rgb(10 13 28 / 0.1);
+  --solv-hairline-soft: rgb(10 13 28 / 0.055);
+  --solv-sheen: rgb(255 255 255 / 0.95);
+  --solv-shadow: 0 12px 36px -14px rgb(20 27 66 / 0.3);
+  --solv-glow: rgb(255 255 255 / 0.55);
+
+  --solv-brand: #6d4aff;
+  --solv-brand-ink: #5b34f0;
+  --solv-brand-wash: rgb(109 74 255 / 0.12);
+  --solv-accent: #0e7f9e;
+  --solv-accent-wash: rgb(14 127 158 / 0.12);
+  --solv-on-brand: #ffffff;
+
+  /* Delta cues: text-contrast steps, distinct from the status fills. */
+  --solv-delta-up: #006300;
+  --solv-delta-down: #b91c1c;
+
+  /* Data-visualisation roles — validated against --viz-surface (see README). */
+  --viz-surface: #f7f8fc;
+  --viz-grid: #e1e0d9;
+  --viz-axis: #c3c2b7;
+  --viz-ink: #0a0d1c;
+  --viz-ink-muted: #7d879f;
+  --viz-series-1: #2a78d6;
+  --viz-series-2: #eb6834;
+  --viz-series-3: #1baf7a;
+  --viz-series-4: #eda100;
+  --viz-series-5: #e87ba4;
+  --viz-ramp-1: #cde2fb;
+  --viz-ramp-2: #9ec5f4;
+  --viz-ramp-3: #5598e7;
+  --viz-ramp-4: #2a78d6;
+  --viz-ramp-5: #184f95;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --solv-canvas: #05060f;
+  --solv-ink: #f3f5ff;
+  --solv-ink-muted: #a9b1cd;
+  --solv-ink-faint: #7c85a5;
+
+  --solv-glass: rgb(255 255 255 / 0.06);
+  --solv-glass-soft: rgb(255 255 255 / 0.035);
+  --solv-glass-strong: rgb(255 255 255 / 0.11);
+
+  --solv-hairline: rgb(255 255 255 / 0.14);
+  --solv-hairline-soft: rgb(255 255 255 / 0.075);
+  --solv-sheen: rgb(255 255 255 / 0.6);
+  --solv-shadow: 0 18px 50px -18px rgb(0 0 0 / 0.75);
+  --solv-glow: rgb(255 255 255 / 0.1);
+
+  --solv-brand: #9d8cff;
+  --solv-brand-ink: #b3a4ff;
+  --solv-brand-wash: rgb(157 140 255 / 0.16);
+  --solv-accent: #4fd1e8;
+  --solv-accent-wash: rgb(79 209 232 / 0.14);
+  --solv-on-brand: #06070f;
+
+  --solv-delta-up: #4ac04a;
+  --solv-delta-down: #f08a8a;
+
+  --viz-surface: #141524;
+  --viz-grid: #2c2c3a;
+  --viz-axis: #38384a;
+  --viz-ink: #f3f5ff;
+  --viz-ink-muted: #7c85a5;
+  --viz-series-1: #3987e5;
+  --viz-series-2: #d95926;
+  --viz-series-3: #199e70;
+  --viz-series-4: #c98500;
+  --viz-series-5: #d55181;
+  --viz-ramp-1: #184f95;
+  --viz-ramp-2: #256abf;
+  --viz-ramp-3: #3987e5;
+  --viz-ramp-4: #6da7ec;
+  --viz-ramp-5: #b7d3f6;
+}
+
+/* Status palette. Fixed by design — never themed, never reused as a series. */
+:root {
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+}
+
+@theme inline {
+  --color-canvas: var(--solv-canvas);
+  --color-ink: var(--solv-ink);
+  --color-ink-muted: var(--solv-ink-muted);
+  --color-ink-faint: var(--solv-ink-faint);
+
+  --color-glass: var(--solv-glass);
+  --color-glass-soft: var(--solv-glass-soft);
+  --color-glass-strong: var(--solv-glass-strong);
+
+  --color-hairline: var(--solv-hairline);
+  --color-hairline-soft: var(--solv-hairline-soft);
+
+  --color-brand: var(--solv-brand);
+  --color-brand-ink: var(--solv-brand-ink);
+  --color-brand-wash: var(--solv-brand-wash);
+  --color-accent: var(--solv-accent);
+  --color-accent-wash: var(--solv-accent-wash);
+  --color-on-brand: var(--solv-on-brand);
+  --color-delta-up: var(--solv-delta-up);
+  --color-delta-down: var(--solv-delta-down);
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --shadow-glass: var(--solv-shadow);
+
+  --animate-drift: drift 28s ease-in-out infinite;
+  --animate-drift-alt: drift 36s ease-in-out infinite reverse;
+  --animate-rise: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(7%, -9%, 0) scale(1.14);
+  }
+  66% {
+    transform: translate3d(-6%, 7%, 0) scale(0.92);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--solv-hairline);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--solv-canvas);
+    color: var(--solv-ink);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv02' 1, 'cv03' 1, 'cv04' 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--solv-brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--solv-brand-wash);
+    color: var(--solv-ink);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+    background-color: color-mix(in oklab, var(--solv-ink-faint) 45%, transparent);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--solv-ink-faint) 70%, transparent);
+  }
+}
+
+/* The glass recipe. One definition, so every panel matches and the theme swap
+   stays in the tokens above rather than in the utility strings. */
+@utility glass {
+  background-color: var(--solv-glass);
+  border: 1px solid var(--solv-hairline);
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  box-shadow:
+    var(--solv-shadow),
+    inset 0 1px 0 0 var(--solv-glow);
+}
+
+@utility glass-soft {
+  background-color: var(--solv-glass-soft);
+  border: 1px solid var(--solv-hairline-soft);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+/* The gloss: a hairline of light along the top edge of a panel. */
+@utility sheen {
+  position: relative;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
