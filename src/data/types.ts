@@ -216,12 +216,30 @@ export interface TrendPoint {
   value: number
 }
 
+export type ResourceCategory =
+  | 'Legal / Cumplimiento'
+  | 'Pagos'
+  | 'Propiedad intelectual'
+  | 'Resolución de conflictos'
+  | 'Reputación y calidad'
+  | 'Onboarding'
+  | 'Seguridad de datos'
+  | 'Negocio'
+
+/** A document in the resources library, rendered as one expandable row. */
 export interface ResourceDoc {
   id: string
   title: string
-  category: 'Política' | 'Directriz' | 'Guía práctica' | 'Referencia'
-  summary: string
-  updatedAt: string
+  category: ResourceCategory
+  /**
+   * One plain-language paragraph on what the document covers and why it exists,
+   * written for someone appraising the platform. It stands in for the text, it
+   * does not replace it — the full version is the one that gets signed.
+   */
+  body: string
+  /** Reading time of the full document, not of `body`. */
   readMinutes: number
+  updatedAt: string
+  /** Surfaced in the "Empieza por aquí" shortcut rail. */
   pinned: boolean
 }

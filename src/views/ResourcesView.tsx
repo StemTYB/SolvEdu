@@ -1,35 +1,33 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { AccordionItem } from '@/components/ui/Accordion'
 import { Chip } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Icon, type IconName } from '@/components/ui/Icon'
 import { Panel, PanelHeader } from '@/components/ui/Panel'
 import { Segmented } from '@/components/ui/Segmented'
 import { ViewHeader } from '@/components/ui/SectionHeading'
-import { RESOURCES } from '@/data/resources'
-import type { ResourceDoc } from '@/data/types'
-import { cn, formatDate, relativeTime } from '@/lib/format'
+import { RESOURCES, RESOURCE_CATEGORIES } from '@/data/resources'
+import type { ResourceCategory } from '@/data/types'
+import { formatDate, relativeTime } from '@/lib/format'
 
-type CategoryFilter = 'Todas' | ResourceDoc['category']
+type CategoryFilter = 'Todas' | ResourceCategory
 
 /**
  * Document categories are labelled by icon and name only. This view carries no
  * chart, so it introduces no categorical scale — a fourth hue system on one
  * screen would compete with the status palette for no gain.
  */
-const CATEGORY_ICON: Record<ResourceDoc['category'], IconName> = {
-  Política: 'shield',
-  Directriz: 'book',
-  'Guía práctica': 'target',
-  Referencia: 'info',
+const CATEGORY_ICON: Record<ResourceCategory, IconName> = {
+  'Legal / Cumplimiento': 'shield',
+  Pagos: 'coins',
+  'Propiedad intelectual': 'copy',
+  'Resolución de conflictos': 'users',
+  'Reputación y calidad': 'star',
+  Onboarding: 'graduation',
+  'Seguridad de datos': 'lock',
+  Negocio: 'trending-up',
 }
-
-const CATEGORIES: ResourceDoc['category'][] = [
-  'Política',
-  'Directriz',
-  'Guía práctica',
-  'Referencia',
-]
 
 const SAFE_HARBOR = [
   {
@@ -52,22 +50,57 @@ const SAFE_HARBOR = [
 
 export function ResourcesView() {
   const [category, setCategory] = useState<CategoryFilter>('Todas')
+  const [openIds, setOpenIds] = useState<ReadonlySet<string>>(() => new Set<string>())
+  const [jumpTo, setJumpTo] = useState<string | null>(null)
 
   const pinned = useMemo(() => RESOURCES.filter((doc) => doc.pinned), [])
-  const docs = useMemo(
+
+  const groups = useMemo(
     () =>
-      category === 'Todas' ? RESOURCES : RESOURCES.filter((doc) => doc.category === category),
+      RESOURCE_CATEGORIES.map((name) => ({
+        name,
+        docs: RESOURCES.filter((doc) => doc.category === name),
+      })).filter((group) => category === 'Todas' || group.name === category),
     [category],
   )
 
   const categoryOptions: Array<{ value: CategoryFilter; label: string; count: number }> = [
     { value: 'Todas', label: 'Todas', count: RESOURCES.length },
-    ...CATEGORIES.map((entry) => ({
+    ...RESOURCE_CATEGORIES.map((entry) => ({
       value: entry,
       label: entry,
       count: RESOURCES.filter((doc) => doc.category === entry).length,
     })),
   ]
+
+  const toggle = (id: string) =>
+    setOpenIds((previous) => {
+      const next = new Set(previous)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
+  /**
+   * The shortcut rail jumps to a row in the grouped list rather than expanding
+   * a copy of it. Clearing the filter first matters: the target has to be
+   * mounted before it can be scrolled to.
+   */
+  const reveal = (id: string) => {
+    setCategory('Todas')
+    setOpenIds((previous) => new Set(previous).add(id))
+    setJumpTo(id)
+  }
+
+  useEffect(() => {
+    if (!jumpTo) return
+
+    document.getElementById(`resource-${jumpTo}`)?.scrollIntoView({
+      block: 'center',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    })
+    setJumpTo(null)
+  }, [jumpTo])
 
   return (
     <>
@@ -159,13 +192,19 @@ export function ResourcesView() {
               </div>
               <h3 className="mt-4 text-[15px] leading-snug font-semibold text-ink">{doc.title}</h3>
               <p className="mt-2.5 flex-1 text-[12.5px] leading-relaxed text-ink-muted">
-                {doc.summary}
+                {doc.body}
               </p>
               <div className="mt-5 flex items-center justify-between gap-3 border-t border-hairline-soft pt-4">
                 <span className="text-[11.5px] text-ink-faint">
                   {doc.readMinutes} min de lectura
                 </span>
-                <Button size="sm" variant="ghost" trailingIcon="chevron-right">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  trailingIcon="chevron-right"
+                  aria-label={`Abrir ${doc.title}`}
+                  onClick={() => reveal(doc.id)}
+                >
                   Abrir
                 </Button>
               </div>
@@ -182,8 +221,8 @@ export function ResourcesView() {
               Biblioteca
             </h2>
             <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              Las políticas te obligan. Las directrices y las guías prácticas no, pero acortan el
-              triaje.
+              Toda la documentación de la plataforma, agrupada por tema. Cada entrada resume en un
+              párrafo qué cubre el documento y por qué existe; el texto completo es el que se firma.
             </p>
           </div>
           <Segmented
@@ -194,57 +233,45 @@ export function ResourcesView() {
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {docs.map((doc) => (
-            <Panel
-              key={doc.id}
-              className={cn('flex flex-col p-5', doc.pinned && 'bg-glass-strong')}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Icon name={CATEGORY_ICON[doc.category]} size={15} className="text-ink-faint" />
-                  <span className="text-[11.5px] font-semibold tracking-[0.1em] text-ink-faint uppercase">
-                    {doc.category}
-                  </span>
+        <div className="space-y-4">
+          {groups.map((group) => (
+            <Panel key={group.name}>
+              <div className="flex items-center justify-between gap-3 border-b border-hairline-soft px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-2.5">
+                  <Icon name={CATEGORY_ICON[group.name]} size={16} className="text-brand-ink" />
+                  <h3 className="text-[14.5px] leading-tight font-semibold tracking-tight text-ink">
+                    {group.name}
+                  </h3>
                 </div>
-                {doc.pinned && (
-                  <Chip size="xs" icon="star">
-                    Fijado
-                  </Chip>
-                )}
+                <Chip size="xs">{group.docs.length} documentos</Chip>
               </div>
 
-              <h3 className="mt-3.5 text-[14px] leading-snug font-semibold text-ink">{doc.title}</h3>
-              <p className="mt-2 flex-1 text-[12.5px] leading-relaxed text-ink-muted">
-                {doc.summary}
-              </p>
-
-              <dl className="mt-5 flex items-center justify-between gap-3 border-t border-hairline-soft pt-4 text-[11px] text-ink-faint">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono">{doc.id}</span>
-                  <span>{doc.readMinutes} min</span>
-                </div>
-                <div className="text-right">
-                  <dt className="sr-only">Última actualización</dt>
-                  <dd title={formatDate(doc.updatedAt, true)}>
-                    actualizado {relativeTime(doc.updatedAt)}
-                  </dd>
-                </div>
-              </dl>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                className="mt-3 -ml-3 self-start"
-                trailingIcon="chevron-right"
-              >
-                Leer documento
-              </Button>
+              {group.docs.map((doc) => (
+                <AccordionItem
+                  key={doc.id}
+                  id={`resource-${doc.id}`}
+                  level={4}
+                  title={doc.title}
+                  open={openIds.has(doc.id)}
+                  onToggle={() => toggle(doc.id)}
+                  footer={
+                    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-faint">
+                      <span className="font-mono">{doc.id}</span>
+                      <span>Versión completa: {doc.readMinutes} min</span>
+                      <span title={formatDate(doc.updatedAt, true)}>
+                        actualizado {relativeTime(doc.updatedAt)}
+                      </span>
+                    </p>
+                  }
+                >
+                  {doc.body}
+                </AccordionItem>
+              ))}
             </Panel>
           ))}
         </div>
 
-        {docs.length === 0 && (
+        {groups.length === 0 && (
           <Panel className="px-6 py-16 text-center">
             <p className="text-[13px] text-ink-muted">
               Todavía no hay nada archivado en esa categoría.
