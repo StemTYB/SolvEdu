@@ -12,31 +12,31 @@ import { company } from '@/data/companies'
 import { SUBMISSIONS, SUBMISSION_STATES, submissionStateCounts } from '@/data/submissions'
 import type { Submission, SubmissionState } from '@/data/types'
 import { PROGRAMS } from '@/data/programs'
-import { cn, compactNumber, formatDate, relativeTime } from '@/lib/format'
+import { cn, formatDate, formatUsd, relativeTime } from '@/lib/format'
 import { SEVERITY_META, STATE_META } from '@/lib/presentation'
 
-type StateFilter = 'All' | SubmissionState
+type StateFilter = 'Todos' | SubmissionState
 type SortKey = 'newest' | 'payout' | 'severity'
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'payout', label: 'Highest award' },
-  { value: 'severity', label: 'Severity' },
+  { value: 'newest', label: 'Más recientes' },
+  { value: 'payout', label: 'Mayor recompensa' },
+  { value: 'severity', label: 'Severidad' },
 ]
 
 function programTitle(programId: string): string {
-  return PROGRAMS.find((program) => program.id === programId)?.title ?? 'Unknown program'
+  return PROGRAMS.find((program) => program.id === programId)?.title ?? 'Programa desconocido'
 }
 
 export function SubmissionsView() {
-  const [state, setState] = useState<StateFilter>('All')
+  const [state, setState] = useState<StateFilter>('Todos')
   const [sort, setSort] = useState<SortKey>('newest')
 
   const counts = submissionStateCounts()
 
   const rows = useMemo(() => {
     const filtered =
-      state === 'All' ? SUBMISSIONS : SUBMISSIONS.filter((item) => item.state === state)
+      state === 'Todos' ? SUBMISSIONS : SUBMISSIONS.filter((item) => item.state === state)
 
     return [...filtered].sort((a, b) => {
       switch (sort) {
@@ -51,66 +51,66 @@ export function SubmissionsView() {
   }, [state, sort])
 
   const settled = SUBMISSIONS.reduce(
-    (sum, item) => sum + (item.state === 'Paid' ? item.payout : 0),
+    (sum, item) => sum + (item.state === 'Pagado' ? item.payout : 0),
     0,
   )
   const awaiting = SUBMISSIONS.reduce(
-    (sum, item) => sum + (item.state === 'Accepted' ? item.payout : 0),
+    (sum, item) => sum + (item.state === 'Aceptado' ? item.payout : 0),
     0,
   )
 
   const stateOptions: Array<{ value: StateFilter; label: string; count: number }> = [
-    { value: 'All', label: 'All', count: SUBMISSIONS.length },
+    { value: 'Todos', label: 'Todos', count: SUBMISSIONS.length },
     ...SUBMISSION_STATES.map((entry) => ({ value: entry, label: entry, count: counts[entry] })),
   ]
 
   return (
     <>
       <ViewHeader
-        title="My Submissions"
-        description="Every report you have filed, with its live position in the pipeline. Companies update state at triage, acceptance and settlement."
+        title="Mis reportes"
+        description="Todos los reportes que has presentado, con su posición actual en el proceso. Las empresas actualizan el estado en el triaje, la aceptación y la liquidación."
         action={
           <Button variant="primary" icon="upload">
-            New report
+            Nuevo reporte
           </Button>
         }
       />
 
       <section className="grid gap-4 sm:grid-cols-3">
         <Panel className="p-5">
-          <p className="text-[11.5px] text-ink-muted">Settled to date</p>
+          <p className="text-[11.5px] text-ink-muted">Liquidado hasta la fecha</p>
           <p className="mt-1.5 text-[26px] leading-none font-semibold tracking-tight text-ink">
-            {compactNumber(settled)} <span className="text-[14px] text-ink-muted">SC</span>
+            {formatUsd(settled)}
           </p>
           <p className="mt-2 text-[11.5px] text-ink-faint">
-            {counts.Paid} reports paid in full
+            {counts.Pagado} reportes pagados en su totalidad
           </p>
         </Panel>
         <Panel className="p-5">
-          <p className="text-[11.5px] text-ink-muted">Accepted, in escrow</p>
+          <p className="text-[11.5px] text-ink-muted">Aceptado, en depósito</p>
           <p className="mt-1.5 text-[26px] leading-none font-semibold tracking-tight text-ink">
-            {compactNumber(awaiting)} <span className="text-[14px] text-ink-muted">SC</span>
+            {formatUsd(awaiting)}
           </p>
           <p className="mt-2 text-[11.5px] text-ink-faint">
-            Releases on each company’s own schedule
+            Se libera según el calendario de cada empresa
           </p>
         </Panel>
         <Panel className="p-5">
-          <p className="text-[11.5px] text-ink-muted">Awaiting first triage</p>
+          <p className="text-[11.5px] text-ink-muted">A la espera del primer triaje</p>
           <p className="mt-1.5 text-[26px] leading-none font-semibold tracking-tight text-ink">
-            {counts.Pending}
+            {counts.Pendiente}
             <span className="ml-1 text-[14px] text-ink-muted">
-              {counts.Pending === 1 ? 'report' : 'reports'}
+              {counts.Pendiente === 1 ? 'reporte' : 'reportes'}
             </span>
           </p>
-          <p className="mt-2 text-[11.5px] text-ink-faint">Median first response: 22 hours</p>
+          <p className="mt-2 text-[11.5px] text-ink-faint">Primera respuesta mediana: 22 horas</p>
         </Panel>
       </section>
 
       <Panel className="p-5 sm:p-6">
         <PanelHeader
-          title="Pipeline"
-          description="Where all twelve reports currently sit."
+          title="Proceso"
+          description="Dónde se encuentran ahora los doce reportes."
           icon={<Icon name="activity" size={17} />}
           className="px-0 pt-0"
         />
@@ -121,14 +121,14 @@ export function SubmissionsView() {
       <Panel className="overflow-hidden">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-4 sm:px-6">
           <Segmented
-            label="Filter by pipeline state"
+            label="Filtrar por estado del proceso"
             options={stateOptions}
             value={state}
             onChange={setState}
           />
           <div className="ml-auto">
             <Segmented
-              label="Sort submissions"
+              label="Ordenar reportes"
               options={SORT_OPTIONS}
               value={sort}
               onChange={setSort}
@@ -139,18 +139,18 @@ export function SubmissionsView() {
         <div className="overflow-x-auto border-t border-hairline-soft">
           <table className="w-full min-w-[900px] border-collapse text-left">
             <caption className="sr-only">
-              Your submitted reports, with severity, pipeline state, CVSS score, submission date and
-              award.
+              Tus reportes presentados, con severidad, estado en el proceso, puntuación CVSS, fecha
+              de presentación y recompensa.
             </caption>
             <thead>
               <tr className="text-[11px] font-semibold tracking-[0.12em] text-ink-faint uppercase">
-                <th scope="col" className="px-5 py-3 sm:px-6">Report</th>
-                <th scope="col" className="px-3 py-3">Finding</th>
-                <th scope="col" className="px-3 py-3">Severity</th>
-                <th scope="col" className="px-3 py-3">State</th>
+                <th scope="col" className="px-5 py-3 sm:px-6">Reporte</th>
+                <th scope="col" className="px-3 py-3">Hallazgo</th>
+                <th scope="col" className="px-3 py-3">Severidad</th>
+                <th scope="col" className="px-3 py-3">Estado</th>
                 <th scope="col" className="px-3 py-3 text-right">CVSS</th>
-                <th scope="col" className="px-3 py-3">Submitted</th>
-                <th scope="col" className="px-5 py-3 text-right sm:px-6">Award</th>
+                <th scope="col" className="px-3 py-3">Presentado</th>
+                <th scope="col" className="px-5 py-3 text-right sm:px-6">Recompensa</th>
               </tr>
             </thead>
             <tbody>
@@ -163,7 +163,7 @@ export function SubmissionsView() {
 
         {rows.length === 0 && (
           <p className="px-6 py-12 text-center text-[13px] text-ink-muted">
-            No reports in this state.
+            No hay reportes en este estado.
           </p>
         )}
       </Panel>
@@ -173,7 +173,7 @@ export function SubmissionsView() {
 
 function SubmissionRow({ submission }: { submission: Submission }) {
   const employer = company(submission.companyId)
-  const settled = submission.state === 'Paid'
+  const settled = submission.state === 'Pagado'
 
   return (
     <tr className="border-t border-hairline-soft transition hover:bg-glass-soft">
@@ -226,14 +226,14 @@ function SubmissionRow({ submission }: { submission: Submission }) {
         {submission.payout > 0 ? (
           <>
             <span className="block text-[12.5px] font-semibold tabular-nums text-ink">
-              {compactNumber(submission.payout)} {submission.currencyCode}
+              {formatUsd(submission.payout)}
             </span>
             <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-ink-faint">
               <ColorDot
                 color={`var(${STATE_META[submission.state].varName})`}
                 className="size-1.5"
               />
-              {settled ? 'settled' : 'accepted'}
+              {settled ? 'liquidado' : 'aceptado'}
             </span>
           </>
         ) : (

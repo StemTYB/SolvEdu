@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { ChartTooltip, type TooltipState } from '@/components/charts/ChartTooltip'
 import type { MonthlyEarnings } from '@/data/types'
-import { cn } from '@/lib/format'
+import { cn, formatUsd } from '@/lib/format'
 
 interface EarningsChartProps {
   data: MonthlyEarnings[]
@@ -94,10 +94,12 @@ export function EarningsChart({ data, className }: EarningsChartProps) {
                     setTip({
                       x: own.left - bounds.left + own.width / 2,
                       y: own.top - bounds.top + (HEIGHT * (100 - heightPct)) / 100,
-                      title: `${month.label} 2026`,
+                      // The year comes from the period key, not a literal: the
+                      // series crosses a year boundary.
+                      title: `${month.label} ${month.period.slice(0, 4)}`,
                       rows: [
-                        { label: 'Settled', value: `${month.amount.toLocaleString('en-US')} SC` },
-                        { label: 'Awards', value: String(month.payouts) },
+                        { label: 'Liquidado', value: formatUsd(month.amount) },
+                        { label: 'Recompensas', value: String(month.payouts) },
                       ],
                     })
                   }}
@@ -116,8 +118,8 @@ export function EarningsChart({ data, className }: EarningsChartProps) {
                     }}
                   />
                   <span className="sr-only">
-                    {month.label}: {month.amount.toLocaleString('en-US')} SC from {month.payouts}{' '}
-                    awards
+                    {month.label} {month.period.slice(0, 4)}: {formatUsd(month.amount)} en{' '}
+                    {month.payouts} recompensas
                   </span>
                 </button>
               )

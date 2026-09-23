@@ -1,5 +1,10 @@
 import type { IconName } from '@/components/ui/Icon'
 
+/*
+ * Route ids stay in English on purpose: they are the URL fragments the hash
+ * router reads, so translating them would break every existing deep link.
+ * Everything a reader sees — labels and titles — is Spanish.
+ */
 export const ROUTES = [
   'dashboard',
   'programs',
@@ -35,42 +40,42 @@ export interface NavGroup {
 
 export const NAV_GROUPS: NavGroup[] = [
   {
-    label: 'Overview',
-    items: [{ id: 'dashboard', label: 'Dashboard', icon: 'dashboard' }],
+    label: 'Resumen',
+    items: [{ id: 'dashboard', label: 'Panel', icon: 'dashboard' }],
   },
   {
-    label: 'Discover',
+    label: 'Explorar',
     items: [
-      { id: 'programs', label: 'Programs', icon: 'target' },
-      { id: 'hacktivity', label: 'Hacktivity', icon: 'activity' },
-      { id: 'leaderboard', label: 'Leaderboard', icon: 'trophy' },
+      { id: 'programs', label: 'Programas', icon: 'target' },
+      { id: 'hacktivity', label: 'Hacktividad', icon: 'activity' },
+      { id: 'leaderboard', label: 'Clasificación', icon: 'trophy' },
     ],
   },
   {
-    label: 'Workspace',
+    label: 'Espacio de trabajo',
     items: [
-      { id: 'submissions', label: 'My Submissions', icon: 'inbox', badge: '12' },
-      { id: 'submit', label: 'Submit Report', icon: 'upload' },
+      { id: 'submissions', label: 'Mis reportes', icon: 'inbox', badge: '12' },
+      { id: 'submit', label: 'Enviar reporte', icon: 'upload' },
     ],
   },
   {
-    label: 'Account',
+    label: 'Cuenta',
     items: [
-      { id: 'wallet', label: 'Earnings', icon: 'wallet' },
-      { id: 'profile', label: 'Profile', icon: 'user' },
-      { id: 'resources', label: 'Resources', icon: 'book' },
+      { id: 'wallet', label: 'Ganancias', icon: 'wallet' },
+      { id: 'profile', label: 'Perfil', icon: 'user' },
+      { id: 'resources', label: 'Recursos', icon: 'book' },
     ],
   },
 ]
 
 export const ROUTE_TITLES: Record<RouteId, string> = {
-  dashboard: 'Dashboard',
-  programs: 'Programs & Challenges',
-  submissions: 'My Submissions',
-  submit: 'Submit Report',
-  leaderboard: 'Leaderboard',
-  profile: 'Profile',
-  wallet: 'Earnings & Wallet',
-  hacktivity: 'Hacktivity',
-  resources: 'Resources & Guidelines',
+  dashboard: 'Panel',
+  programs: 'Programas y retos',
+  submissions: 'Mis reportes',
+  submit: 'Enviar reporte',
+  leaderboard: 'Clasificación',
+  profile: 'Perfil',
+  wallet: 'Ganancias y cartera',
+  hacktivity: 'Hacktividad',
+  resources: 'Recursos y directrices',
 }

@@ -9,16 +9,16 @@ import { ViewHeader } from '@/components/ui/SectionHeading'
 import { COMPANIES, company } from '@/data/companies'
 import { PROGRAMS } from '@/data/programs'
 import type { CompanyId, Severity } from '@/data/types'
-import { cn, formatDate } from '@/lib/format'
+import { cn, formatDate, formatUsd } from '@/lib/format'
 import { SEVERITIES, SEVERITY_META } from '@/lib/presentation'
 
 /** Maps a CVSS base score onto the platform's severity bands. */
 function severityForScore(score: number): Severity {
-  if (score === 0) return 'Informational'
-  if (score < 4) return 'Low'
-  if (score < 7) return 'Medium'
-  if (score < 9) return 'High'
-  return 'Critical'
+  if (score === 0) return 'Informativa'
+  if (score < 4) return 'Baja'
+  if (score < 7) return 'Media'
+  if (score < 9) return 'Alta'
+  return 'Crítica'
 }
 
 function Field({
@@ -63,7 +63,7 @@ export function SubmitReportView() {
   const [companyId, setCompanyId] = useState<CompanyId>('stark')
   const [programId, setProgramId] = useState('')
   const [title, setTitle] = useState('')
-  const [severity, setSeverity] = useState<Severity>('Medium')
+  const [severity, setSeverity] = useState<Severity>('Media')
   const [cvss, setCvss] = useState('')
   const [description, setDescription] = useState('')
   const [steps, setSteps] = useState('')
@@ -85,16 +85,16 @@ export function SubmitReportView() {
   const severityMismatch = impliedSeverity !== null && impliedSeverity !== severity
 
   const checks = [
-    { label: 'A program is selected', ok: Boolean(selectedProgram) },
-    { label: 'Title is at least 12 characters', ok: title.trim().length >= 12 },
-    { label: 'Description is at least 40 characters', ok: description.trim().length >= 40 },
-    { label: 'Reproduction steps are at least 20 characters', ok: steps.trim().length >= 20 },
-    { label: 'All three attestations are confirmed', ok: Object.values(attested).every(Boolean) },
+    { label: 'Hay una convocatoria seleccionada', ok: Boolean(selectedProgram) },
+    { label: 'El título tiene al menos 12 caracteres', ok: title.trim().length >= 12 },
+    { label: 'La descripción tiene al menos 40 caracteres', ok: description.trim().length >= 40 },
+    { label: 'Los pasos de reproducción tienen al menos 20 caracteres', ok: steps.trim().length >= 20 },
+    { label: 'Las tres declaraciones están confirmadas', ok: Object.values(attested).every(Boolean) },
   ]
   const ready = checks.every((check) => check.ok)
 
   const addAttachment = () => {
-    const next = `poc-${String(attachments.length + 1).padStart(2, '0')}-capture.png`
+    const next = `poc-${String(attachments.length + 1).padStart(2, '0')}-captura.png`
     setAttachments((current) => [...current, next])
   }
 
@@ -102,8 +102,8 @@ export function SubmitReportView() {
     return (
       <>
         <ViewHeader
-          title="Report submitted"
-          description="Your report is queued for triage. You will be notified at each state change."
+          title="Reporte presentado"
+          description="Tu reporte está en cola para triaje. Se te avisará en cada cambio de estado."
         />
         <Panel className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-4">
@@ -112,40 +112,38 @@ export function SubmitReportView() {
             </span>
             <div>
               <p className="text-[15px] font-semibold text-ink">
-                SUB-4472 filed against {employer.name}
+                SUB-4472 presentado contra {employer.name}
               </p>
               <p className="mt-1 text-[13px] text-ink-muted">
-                {title.trim() || 'Untitled finding'} · {severity}
+                {title.trim() || 'Hallazgo sin título'} · {severity}
               </p>
             </div>
           </div>
 
           <dl className="mt-7 grid gap-5 border-t border-hairline-soft pt-6 sm:grid-cols-3">
             <div>
-              <dt className="text-[11.5px] text-ink-muted">Median first response</dt>
+              <dt className="text-[11.5px] text-ink-muted">Primera respuesta mediana</dt>
               <dd className="mt-1 text-[17px] font-semibold text-ink">
-                {employer.triageSlaHours} hours
+                {employer.triageSlaHours} horas
               </dd>
             </div>
             <div>
-              <dt className="text-[11.5px] text-ink-muted">Award ceiling on this brief</dt>
+              <dt className="text-[11.5px] text-ink-muted">Techo de recompensa de esta convocatoria</dt>
               <dd className="mt-1 text-[17px] font-semibold text-ink">
-                {selectedProgram
-                  ? `${selectedProgram.bountyMax.toLocaleString('en-US')} ${employer.currency.code}`
-                  : '—'}
+                {selectedProgram ? formatUsd(selectedProgram.bountyMax) : '—'}
               </dd>
             </div>
             <div>
-              <dt className="text-[11.5px] text-ink-muted">Disclosure default</dt>
-              <dd className="mt-1 text-[17px] font-semibold text-ink">90 days</dd>
+              <dt className="text-[11.5px] text-ink-muted">Divulgación por defecto</dt>
+              <dd className="mt-1 text-[17px] font-semibold text-ink">90 días</dd>
             </div>
           </dl>
 
           <div className="mt-7 flex flex-wrap gap-2.5">
             <Button variant="primary" icon="inbox" onClick={() => setSubmitted(false)}>
-              File another report
+              Presentar otro reporte
             </Button>
-            <Button icon="book">Read the reporting guide</Button>
+            <Button icon="book">Leer la guía de reporte</Button>
           </div>
         </Panel>
       </>
@@ -155,13 +153,13 @@ export function SubmitReportView() {
   return (
     <>
       <ViewHeader
-        title="Submit Report"
-        description="Reports that a triager can reproduce in one pass are accepted fastest. Structure the evidence, state the impact, and attach a bounded proof of concept."
+        title="Enviar reporte"
+        description="Los reportes que un triador puede reproducir de una sola pasada se aceptan antes. Estructura la evidencia, declara el impacto y adjunta una prueba de concepto acotada."
         action={
           <>
-            <Button icon="download">Download template</Button>
+            <Button icon="download">Descargar plantilla</Button>
             <Button variant="primary" icon="upload" disabled={!ready}>
-              Submit report
+              Enviar reporte
             </Button>
           </>
         }
@@ -172,15 +170,15 @@ export function SubmitReportView() {
           {/* ------------------------------------------------- Target company */}
           <Panel className="p-5 sm:p-6">
             <PanelHeader
-              title="Target"
-              description="Which company and which published brief does this finding belong to?"
+              title="Destino"
+              description="¿A qué empresa y a qué convocatoria publicada pertenece este hallazgo?"
               icon={<Icon name="building" size={17} />}
               className="px-0 pt-0"
             />
 
             <fieldset className="mt-5">
               <legend className="mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-ink-faint uppercase">
-                Company <span aria-hidden="true">*</span>
+                Empresa <span aria-hidden="true">*</span>
               </legend>
               <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                 {COMPANIES.map((entry) => {
@@ -215,7 +213,7 @@ export function SubmitReportView() {
                           {entry.name}
                         </span>
                         <span className="block truncate text-[11px] text-ink-faint">
-                          {entry.currency.code} · {entry.openPrograms} open
+                          USD · {entry.openPrograms} abiertos
                         </span>
                       </span>
                     </button>
@@ -225,13 +223,17 @@ export function SubmitReportView() {
             </fieldset>
 
             <div className="mt-5">
-              <Field label="Program" required hint="Only briefs published by the selected company">
+              <Field
+                label="Convocatoria"
+                required
+                hint="Solo convocatorias publicadas por la empresa seleccionada"
+              >
                 <select
                   value={programId}
                   onChange={(event) => setProgramId(event.target.value)}
                   className={cn(INPUT_CLASS, 'appearance-none')}
                 >
-                  <option value="">Select a brief…</option>
+                  <option value="">Selecciona una convocatoria…</option>
                   {programs.map((program) => (
                     <option key={program.id} value={program.id}>
                       {program.id} — {program.title}
@@ -245,16 +247,15 @@ export function SubmitReportView() {
                   <Chip size="xs">{selectedProgram.category}</Chip>
                   <Chip size="xs">{selectedProgram.scope}</Chip>
                   <Chip size="xs" icon="clock">
-                    closes {formatDate(selectedProgram.deadline)}
+                    cierra el {formatDate(selectedProgram.deadline)}
                   </Chip>
                   {selectedProgram.safeHarbor && (
                     <Chip size="xs" icon="shield">
-                      Safe Harbor
+                      Puerto seguro
                     </Chip>
                   )}
                   <span className="ml-auto text-[11.5px] text-ink-faint">
-                    ceiling {selectedProgram.bountyMax.toLocaleString('en-US')}{' '}
-                    {employer.currency.code}
+                    techo {formatUsd(selectedProgram.bountyMax)}
                   </span>
                 </div>
               )}
@@ -264,25 +265,25 @@ export function SubmitReportView() {
           {/* -------------------------------------------------------- The report */}
           <Panel className="p-5 sm:p-6">
             <PanelHeader
-              title="The finding"
-              description="Lead with the defect. Keep the narrative out of the title."
+              title="El hallazgo"
+              description="Empieza por el defecto. Deja la narrativa fuera del título."
               icon={<Icon name="code" size={17} />}
               className="px-0 pt-0"
             />
 
             <div className="mt-5 space-y-5">
-              <Field label="Title" required hint="12–140 characters">
+              <Field label="Título" required hint="12–140 caracteres">
                 <input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   maxLength={140}
-                  placeholder="Thermal governor re-arms before die cool-down completes"
+                  placeholder="El gobernador térmico se rearma antes de que termine el enfriamiento del dado"
                   className={INPUT_CLASS}
                 />
               </Field>
 
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Your severity assessment" hint="Triagers may adjust this">
+                <Field label="Tu valoración de severidad" hint="Los triadores pueden ajustarla">
                   <div className="flex flex-wrap gap-1.5">
                     {SEVERITIES.map((entry) => {
                       const active = entry === severity
@@ -311,7 +312,7 @@ export function SubmitReportView() {
                   </div>
                 </Field>
 
-                <Field label="CVSS base score" hint="0.0 – 10.0">
+                <Field label="Puntuación CVSS base" hint="0.0 – 10.0">
                   <input
                     value={cvss}
                     onChange={(event) => setCvss(event.target.value)}
@@ -331,40 +332,45 @@ export function SubmitReportView() {
                     style={{ color: 'var(--status-warning)' }}
                   />
                   <span>
-                    A CVSS of {score.toFixed(1)} maps to{' '}
-                    <strong className="font-semibold text-ink">{impliedSeverity}</strong> under{' '}
-                    {employer.name}’s rubric. Reports filed at the matching band triage faster —
-                    mismatches are the most common reason an award is reduced.
+                    Un CVSS de {score.toFixed(1)} corresponde a{' '}
+                    <strong className="font-semibold text-ink">{impliedSeverity}</strong> según el
+                    baremo de {employer.name}. Los reportes presentados en la banda que
+                    corresponde pasan antes por triaje: el desajuste es el motivo más habitual de
+                    que se reduzca una recompensa.
                   </span>
                 </p>
               )}
 
-              <Field label="Description" required hint="What is wrong, and where">
+              <Field label="Descripción" required hint="Qué está mal y dónde">
                 <textarea
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   rows={4}
-                  placeholder="The fallback governor re-arms on a fixed timer rather than a die-temperature read…"
+                  placeholder="El gobernador de respaldo se rearma con un temporizador fijo en lugar de leer la temperatura del dado…"
                   className={cn(INPUT_CLASS, 'resize-y leading-relaxed')}
                 />
               </Field>
 
-              <Field label="Steps to reproduce" required hint="Numbered, minimal, from a clean state">
+              <Field
+                label="Pasos para reproducir"
+                required
+                hint="Numerados, mínimos, desde un estado limpio"
+              >
                 <textarea
                   value={steps}
                   onChange={(event) => setSteps(event.target.value)}
                   rows={5}
-                  placeholder={'1. Flash the supplied image to the H-3 bench unit\n2. Command a sustained hover at 400 m\n3. Observe…'}
+                  placeholder={'1. Flashear la imagen facilitada en la unidad de banco H-3\n2. Ordenar un vuelo estacionario sostenido a 400 m\n3. Observar…'}
                   className={cn(INPUT_CLASS, 'resize-y font-mono text-[12px] leading-relaxed')}
                 />
               </Field>
 
-              <Field label="Impact" hint="What an attacker gains, and the realistic blast radius">
+              <Field label="Impacto" hint="Qué gana un atacante y el alcance realista">
                 <textarea
                   value={impact}
                   onChange={(event) => setImpact(event.target.value)}
                   rows={3}
-                  placeholder="Sustained thermal excursion past the emitter's rated envelope…"
+                  placeholder="Excursión térmica sostenida más allá del envelope nominal del emisor…"
                   className={cn(INPUT_CLASS, 'resize-y leading-relaxed')}
                 />
               </Field>
@@ -374,13 +380,13 @@ export function SubmitReportView() {
           {/* ------------------------------------------------------------ PoC */}
           <Panel className="p-5 sm:p-6">
             <PanelHeader
-              title="Proof of concept"
-              description="Bounded scripts, sanitised captures and logs. Redact anything containing personal data."
+              title="Prueba de concepto"
+              description="Scripts acotados, capturas saneadas y registros. Tacha cualquier dato personal."
               icon={<Icon name="paperclip" size={17} />}
               className="px-0 pt-0"
               action={
                 <Button size="sm" icon="plus" onClick={addAttachment}>
-                  Attach
+                  Adjuntar
                 </Button>
               }
             />
@@ -396,7 +402,7 @@ export function SubmitReportView() {
                   <span className="ml-auto shrink-0 text-[11px] text-ink-faint">248 KB</span>
                   <button
                     type="button"
-                    aria-label={`Remove ${file}`}
+                    aria-label={`Quitar ${file}`}
                     onClick={() =>
                       setAttachments((current) => current.filter((entry) => entry !== file))
                     }
@@ -415,10 +421,10 @@ export function SubmitReportView() {
             >
               <Icon name="upload" size={20} className="text-ink-faint" />
               <span className="mt-2 text-[12.5px] font-medium text-ink">
-                Drop captures, scripts or logs
+                Suelta capturas, scripts o registros
               </span>
               <span className="mt-1 text-[11.5px] text-ink-faint">
-                PNG, PCAP, TXT or ZIP up to 25 MB each
+                PNG, PCAP, TXT o ZIP de hasta 25 MB cada uno
               </span>
             </button>
           </Panel>
@@ -428,7 +434,7 @@ export function SubmitReportView() {
         <div className="space-y-5">
           <Panel className="p-5">
             <PanelHeader
-              title="Ready to submit"
+              title="Listo para enviar"
               icon={<Icon name="check-circle" size={17} />}
               className="px-0 pt-0"
             />
@@ -456,26 +462,26 @@ export function SubmitReportView() {
               disabled={!ready}
               onClick={() => setSubmitted(true)}
             >
-              Submit report
+              Enviar reporte
             </Button>
             <p className="mt-2.5 text-center text-[11px] text-ink-faint">
-              You can edit the report until first triage.
+              Puedes editar el reporte hasta el primer triaje.
             </p>
           </Panel>
 
           <Panel className="p-5">
             <PanelHeader
-              title="Attestations"
-              description="Required before a report can be filed."
+              title="Declaraciones"
+              description="Obligatorias antes de presentar un reporte."
               icon={<Icon name="shield" size={17} />}
               className="px-0 pt-0"
             />
             <div className="mt-4 space-y-3">
               {(
                 [
-                  ['scope', `I stayed inside ${employer.name}’s published scope.`],
-                  ['data', 'I did not access, copy or retain any personal data.'],
-                  ['disclosure', 'I will not disclose this publicly before the 90-day window.'],
+                  ['scope', `Me he mantenido dentro del alcance publicado de ${employer.name}.`],
+                  ['data', 'No he accedido, copiado ni conservado ningún dato personal.'],
+                  ['disclosure', 'No divulgaré esto públicamente antes de la ventana de 90 días.'],
                 ] as const
               ).map(([key, text]) => (
                 <label key={key} className="flex cursor-pointer items-start gap-2.5">
@@ -495,28 +501,30 @@ export function SubmitReportView() {
 
           <Panel className="p-5">
             <PanelHeader
-              title={`${employer.name} at a glance`}
+              title={`${employer.name} de un vistazo`}
               icon={<Icon name="building" size={17} />}
               className="px-0 pt-0"
             />
             <dl className="mt-4 space-y-3 text-[12.5px]">
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-ink-muted">Median first response</dt>
+                <dt className="text-ink-muted">Primera respuesta mediana</dt>
                 <dd className="font-semibold text-ink">{employer.triageSlaHours} h</dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-ink-muted">Open programs</dt>
+                <dt className="text-ink-muted">Programas abiertos</dt>
                 <dd className="font-semibold tabular-nums text-ink">{employer.openPrograms}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-ink-muted">Escrow funded</dt>
+                <dt className="text-ink-muted">Depósito en garantía</dt>
                 <dd className="font-semibold tabular-nums text-ink">
-                  {employer.escrowFunded.toLocaleString('en-US')} {employer.currency.code}
+                  {formatUsd(employer.escrowFunded)}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-ink-muted">Safe Harbor since</dt>
-                <dd className="font-semibold text-ink">{formatDate(employer.safeHarborSince, true)}</dd>
+                <dt className="text-ink-muted">Puerto seguro desde</dt>
+                <dd className="font-semibold text-ink">
+                  {formatDate(employer.safeHarborSince, true)}
+                </dd>
               </div>
             </dl>
             <p className="mt-4 border-t border-hairline-soft pt-3.5 text-[11.5px] leading-relaxed text-ink-faint">
@@ -526,8 +534,8 @@ export function SubmitReportView() {
 
           <Panel className="p-5">
             <PanelHeader
-              title="Severity rubric"
-              description="Mapped to the reserved status scale used across the platform."
+              title="Baremo de severidad"
+              description="Asignado a la escala de estado reservada que se usa en toda la plataforma."
               icon={<Icon name="alert" size={17} />}
               className="px-0 pt-0"
             />
@@ -536,11 +544,11 @@ export function SubmitReportView() {
                 <li key={entry} className="flex items-center justify-between gap-3">
                   <SeverityBadge severity={entry} size="xs" />
                   <span className="text-[11.5px] tabular-nums text-ink-faint">
-                    {entry === 'Informational' && '0.0'}
-                    {entry === 'Low' && '0.1 – 3.9'}
-                    {entry === 'Medium' && '4.0 – 6.9'}
-                    {entry === 'High' && '7.0 – 8.9'}
-                    {entry === 'Critical' && '9.0 – 10.0'}
+                    {entry === 'Informativa' && '0.0'}
+                    {entry === 'Baja' && '0.1 – 3.9'}
+                    {entry === 'Media' && '4.0 – 6.9'}
+                    {entry === 'Alta' && '7.0 – 8.9'}
+                    {entry === 'Crítica' && '9.0 – 10.0'}
                   </span>
                 </li>
               ))}

@@ -10,7 +10,7 @@ import { RESOURCES } from '@/data/resources'
 import type { ResourceDoc } from '@/data/types'
 import { cn, formatDate, relativeTime } from '@/lib/format'
 
-type CategoryFilter = 'All' | ResourceDoc['category']
+type CategoryFilter = 'Todas' | ResourceDoc['category']
 
 /**
  * Document categories are labelled by icon and name only. This view carries no
@@ -18,44 +18,50 @@ type CategoryFilter = 'All' | ResourceDoc['category']
  * screen would compete with the status palette for no gain.
  */
 const CATEGORY_ICON: Record<ResourceDoc['category'], IconName> = {
-  Policy: 'shield',
-  Guideline: 'book',
-  Playbook: 'target',
-  Reference: 'info',
+  Política: 'shield',
+  Directriz: 'book',
+  'Guía práctica': 'target',
+  Referencia: 'info',
 }
 
-const CATEGORIES: ResourceDoc['category'][] = ['Policy', 'Guideline', 'Playbook', 'Reference']
+const CATEGORIES: ResourceDoc['category'][] = [
+  'Política',
+  'Directriz',
+  'Guía práctica',
+  'Referencia',
+]
 
 const SAFE_HARBOR = [
   {
-    title: 'We will not pursue you',
-    body: 'For work inside a published scope, the company waives civil claims and will not refer the finding to law enforcement.',
+    title: 'No te perseguiremos',
+    body: 'Por el trabajo realizado dentro de un alcance publicado, la empresa renuncia a las reclamaciones civiles y no pondrá el hallazgo en conocimiento de las autoridades.',
   },
   {
-    title: 'We will triage in good faith',
-    body: 'A human reads every report. Median first response across the five companies is 22 hours.',
+    title: 'Haremos el triaje de buena fe',
+    body: 'Una persona lee cada reporte. La primera respuesta mediana entre las cinco empresas es de 22 horas.',
   },
   {
-    title: 'We will pay what we publish',
-    body: 'Award bands are fixed before you file. A company cannot reduce an award because the fix was easy.',
+    title: 'Pagaremos lo que publicamos',
+    body: 'Las bandas de recompensa se fijan antes de que presentes el reporte. Una empresa no puede reducir un pago porque la corrección fuera sencilla.',
   },
   {
-    title: 'You will not touch live data',
-    body: 'Personal data is out of scope everywhere. Stop at the first proof and report immediately.',
+    title: 'No tocarás datos reales',
+    body: 'Los datos personales quedan fuera de alcance en todas partes. Detente en la primera prueba e informa de inmediato.',
   },
 ]
 
 export function ResourcesView() {
-  const [category, setCategory] = useState<CategoryFilter>('All')
+  const [category, setCategory] = useState<CategoryFilter>('Todas')
 
   const pinned = useMemo(() => RESOURCES.filter((doc) => doc.pinned), [])
   const docs = useMemo(
-    () => (category === 'All' ? RESOURCES : RESOURCES.filter((doc) => doc.category === category)),
+    () =>
+      category === 'Todas' ? RESOURCES : RESOURCES.filter((doc) => doc.category === category),
     [category],
   )
 
   const categoryOptions: Array<{ value: CategoryFilter; label: string; count: number }> = [
-    { value: 'All', label: 'All', count: RESOURCES.length },
+    { value: 'Todas', label: 'Todas', count: RESOURCES.length },
     ...CATEGORIES.map((entry) => ({
       value: entry,
       label: entry,
@@ -66,13 +72,13 @@ export function ResourcesView() {
   return (
     <>
       <ViewHeader
-        title="Resources & Guidelines"
-        description="Read the policy before you file, not after. Nearly every rejected report on this platform was rejected on a rule that is written down here."
+        title="Recursos y directrices"
+        description="Lee la política antes de presentar, no después. Casi todos los reportes rechazados en esta plataforma se rechazaron por una regla que está escrita aquí."
         action={
           <>
-            <Button icon="download">Download handbook</Button>
+            <Button icon="download">Descargar manual</Button>
             <Button variant="primary" icon="book">
-              Reporting guide
+              Guía de reporte
             </Button>
           </>
         }
@@ -85,16 +91,17 @@ export function ResourcesView() {
             <div className="flex items-center gap-2">
               <Icon name="shield" size={18} className="text-brand-ink" />
               <h2 className="text-[17px] leading-tight font-semibold tracking-tight text-ink">
-                Safe Harbor at a glance
+                Puerto seguro de un vistazo
               </h2>
             </div>
             <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-muted">
-              What every client company commits to when you stay inside a published scope. The
-              binding text is version 4.2 — the summary below is orientation, not the contract.
+              A lo que se compromete cada empresa cliente cuando te mantienes dentro de un alcance
+              publicado. El texto vinculante es la versión 4.2: el resumen de abajo orienta, pero no
+              es el contrato.
             </p>
           </div>
           <Chip size="sm" icon="check" tone="var(--status-good)">
-            In effect since 5 Sep 2026
+            En vigor desde el 5 sep 2026
           </Chip>
         </div>
 
@@ -116,10 +123,10 @@ export function ResourcesView() {
         </dl>
 
         <p className="mt-6 border-t border-hairline-soft pt-4 text-[12px] leading-relaxed text-ink-muted">
-          <strong className="font-semibold text-ink">Out of scope, everywhere.</strong> Live
-          production infrastructure, third-party systems, social engineering of company staff, and
-          any access to personal data. Physical-access programmes are supervised-only and are
-          listed as such on the brief.
+          <strong className="font-semibold text-ink">Fuera de alcance, en todas partes.</strong>{' '}
+          Infraestructura de producción real, sistemas de terceros, ingeniería social contra el
+          personal de la empresa y cualquier acceso a datos personales. Los programas de acceso
+          físico son siempre supervisados y así se indican en la convocatoria.
         </p>
       </Panel>
 
@@ -128,14 +135,14 @@ export function ResourcesView() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-[19px] leading-tight font-semibold tracking-tight text-ink">
-              Start here
+              Empieza por aquí
             </h2>
             <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              The three documents that decide most first-time outcomes.
+              Los tres documentos que deciden la mayoría de los primeros resultados.
             </p>
           </div>
           <Chip size="sm" icon="book">
-            {pinned.length} pinned
+            {pinned.length} fijados
           </Chip>
         </div>
 
@@ -155,9 +162,11 @@ export function ResourcesView() {
                 {doc.summary}
               </p>
               <div className="mt-5 flex items-center justify-between gap-3 border-t border-hairline-soft pt-4">
-                <span className="text-[11.5px] text-ink-faint">{doc.readMinutes} min read</span>
+                <span className="text-[11.5px] text-ink-faint">
+                  {doc.readMinutes} min de lectura
+                </span>
                 <Button size="sm" variant="ghost" trailingIcon="chevron-right">
-                  Open
+                  Abrir
                 </Button>
               </div>
             </Panel>
@@ -170,14 +179,15 @@ export function ResourcesView() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-[19px] leading-tight font-semibold tracking-tight text-ink">
-              Library
+              Biblioteca
             </h2>
             <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              Policies bind you. Guidelines and playbooks do not, but they shorten triage.
+              Las políticas te obligan. Las directrices y las guías prácticas no, pero acortan el
+              triaje.
             </p>
           </div>
           <Segmented
-            label="Filter documents by category"
+            label="Filtrar documentos por categoría"
             options={categoryOptions}
             value={category}
             onChange={setCategory}
@@ -199,7 +209,7 @@ export function ResourcesView() {
                 </div>
                 {doc.pinned && (
                   <Chip size="xs" icon="star">
-                    Pinned
+                    Fijado
                   </Chip>
                 )}
               </div>
@@ -215,15 +225,20 @@ export function ResourcesView() {
                   <span>{doc.readMinutes} min</span>
                 </div>
                 <div className="text-right">
-                  <dt className="sr-only">Last updated</dt>
+                  <dt className="sr-only">Última actualización</dt>
                   <dd title={formatDate(doc.updatedAt, true)}>
-                    updated {relativeTime(doc.updatedAt)}
+                    actualizado {relativeTime(doc.updatedAt)}
                   </dd>
                 </div>
               </dl>
 
-              <Button size="sm" variant="ghost" className="mt-3 -ml-3 self-start" trailingIcon="chevron-right">
-                Read document
+              <Button
+                size="sm"
+                variant="ghost"
+                className="mt-3 -ml-3 self-start"
+                trailingIcon="chevron-right"
+              >
+                Leer documento
               </Button>
             </Panel>
           ))}
@@ -231,7 +246,9 @@ export function ResourcesView() {
 
         {docs.length === 0 && (
           <Panel className="px-6 py-16 text-center">
-            <p className="text-[13px] text-ink-muted">Nothing filed under that category yet.</p>
+            <p className="text-[13px] text-ink-muted">
+              Todavía no hay nada archivado en esa categoría.
+            </p>
           </Panel>
         )}
       </section>
@@ -239,18 +256,18 @@ export function ResourcesView() {
       {/* ------------------------------------------------------------ Checklist */}
       <Panel className="p-5 sm:p-6">
         <PanelHeader
-          title="Before you hit submit"
-          description="A five-point pass that catches most of what triagers bounce."
+          title="Antes de pulsar enviar"
+          description="Una pasada de cinco puntos que atrapa casi todo lo que los triadores devuelven."
           icon={<Icon name="check-circle" size={17} />}
           className="px-0 pt-0"
         />
         <ol className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
           {[
-            ['Scope', 'The asset is named in the brief’s published scope, as amended today.'],
-            ['Reproduction', 'Numbered steps from a clean state, with the environment stated.'],
-            ['Evidence', 'A bounded PoC and sanitised captures. No personal data anywhere.'],
-            ['Duplicates', 'You searched Hacktivity for the same defect before filing.'],
-            ['Impact', 'You stated what an attacker gains, not what you think they might.'],
+            ['Alcance', 'El activo está nombrado en el alcance publicado de la convocatoria, tal como está hoy.'],
+            ['Reproducción', 'Pasos numerados desde un estado limpio y con el entorno indicado.'],
+            ['Evidencia', 'Una PoC acotada y capturas saneadas. Ningún dato personal en ningún sitio.'],
+            ['Duplicados', 'Has buscado el mismo defecto en Hacktividad antes de presentar.'],
+            ['Impacto', 'Has declarado lo que un atacante consigue, no lo que crees que podría conseguir.'],
           ].map(([term, body], index) => (
             <li key={term}>
               <div className="flex items-center gap-2">

@@ -14,16 +14,19 @@ import {
   PROGRAM_CATEGORIES,
   PROGRAM_SCOPES,
 } from '@/data/programs'
-import { cn, compactNumber } from '@/lib/format'
+import { cn, formatUsd } from '@/lib/format'
 
 type SortKey = 'match' | 'bounty' | 'deadline' | 'newest'
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
-  { value: 'match', label: 'Best match' },
-  { value: 'bounty', label: 'Top bounty' },
-  { value: 'deadline', label: 'Closing soon' },
-  { value: 'newest', label: 'Newest' },
+  { value: 'match', label: 'Mejor afinidad' },
+  { value: 'bounty', label: 'Mayor recompensa' },
+  { value: 'deadline', label: 'Cierre próximo' },
+  { value: 'newest', label: 'Más recientes' },
 ]
+
+/** The slider moves in $100 steps — one notch per dollar band the directory can hit. */
+const BOUNTY_STEP = 100
 
 function toggle<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set)
@@ -102,18 +105,20 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
     onQueryChange('')
   }
 
+  const escrowTotal = results.reduce((sum, program) => sum + program.bountyMax, 0)
+
   return (
     <>
       <ViewHeader
-        title="Programs & Challenges"
-        description="Every open engagement across the five client companies. Scopes are published up front, and each carries its own Safe Harbor terms."
+        title="Programas y retos"
+        description="Todos los encargos abiertos de las cinco empresas cliente. El alcance se publica por adelantado y cada programa lleva sus propias condiciones de Puerto seguro."
         action={
           <>
             <Button size="md" icon="refresh" variant="secondary">
-              Refresh
+              Actualizar
             </Button>
             <Button size="md" variant="primary" icon="sparkles">
-              Match me
+              Sugerir para mí
             </Button>
           </>
         }
@@ -124,7 +129,7 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <div className="flex items-center gap-2 text-ink-muted">
             <Icon name="filter" size={16} />
-            <span className="text-[12.5px] font-semibold">Filters</span>
+            <span className="text-[12.5px] font-semibold">Filtros</span>
             {activeCount > 0 && (
               <span className="rounded-full bg-brand-wash px-1.5 py-0.5 text-[10.5px] font-semibold text-brand-ink tabular-nums">
                 {activeCount}
@@ -132,12 +137,12 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
             )}
           </div>
 
-          <Segmented label="Sort programs" options={SORT_OPTIONS} value={sort} onChange={setSort} />
+          <Segmented label="Ordenar programas" options={SORT_OPTIONS} value={sort} onChange={setSort} />
 
           <div className="ml-auto flex items-center gap-2">
             {activeCount > 0 && (
               <Button size="sm" variant="ghost" icon="close" onClick={clearAll}>
-                Clear
+                Limpiar
               </Button>
             )}
             <Button
@@ -147,7 +152,7 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
               className={cn('transition', filtersOpen && 'rotate-180')}
               onClick={() => setFiltersOpen((open) => !open)}
             >
-              Advanced
+              Avanzados
             </Button>
           </div>
         </div>
@@ -156,7 +161,7 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
           <div className="mt-5 space-y-5 border-t border-hairline-soft pt-5">
             <fieldset>
               <legend className="mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-ink-faint uppercase">
-                Company
+                Empresa
               </legend>
               <div className="flex flex-wrap gap-2">
                 {COMPANIES.map((employer) => (
@@ -175,7 +180,7 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
 
             <fieldset>
               <legend className="mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-ink-faint uppercase">
-                Category
+                Categoría
               </legend>
               <div className="flex flex-wrap gap-2">
                 {PROGRAM_CATEGORIES.map((category) => (
@@ -194,7 +199,7 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
             <div className="grid gap-5 md:grid-cols-2">
               <fieldset>
                 <legend className="mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-ink-faint uppercase">
-                  Scope
+                  Alcance
                 </legend>
                 <div className="flex flex-wrap gap-2">
                   {PROGRAM_SCOPES.map((scope) => (
@@ -211,24 +216,24 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
 
               <fieldset>
                 <legend className="mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-ink-faint uppercase">
-                  Minimum bounty ceiling
+                  Techo mínimo de recompensa
                 </legend>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
                     min={0}
                     max={MAX_BOUNTY}
-                    step={5_000}
+                    step={BOUNTY_STEP}
                     value={minBounty}
                     onChange={(event) => setMinBounty(Number(event.target.value))}
-                    aria-label="Minimum bounty ceiling"
+                    aria-label="Techo mínimo de recompensa"
                     className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-brand-wash accent-[var(--solv-brand)]"
                     style={{
                       background: `linear-gradient(to right, var(--solv-brand) ${(minBounty / MAX_BOUNTY) * 100}%, color-mix(in oklab, var(--solv-brand) 20%, transparent) ${(minBounty / MAX_BOUNTY) * 100}%)`,
                     }}
                   />
-                  <span className="w-24 shrink-0 text-right text-[12.5px] font-semibold tabular-nums text-ink">
-                    {minBounty === 0 ? 'Any' : `≥ ${compactNumber(minBounty)} SC`}
+                  <span className="w-28 shrink-0 text-right text-[12.5px] font-semibold tabular-nums text-ink">
+                    {minBounty === 0 ? 'Cualquiera' : `≥ ${formatUsd(minBounty)}`}
                   </span>
                 </div>
               </fieldset>
@@ -236,7 +241,7 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
 
             <fieldset>
               <legend className="mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-ink-faint uppercase">
-                Tech stack
+                Stack tecnológico
               </legend>
               <div className="flex flex-wrap gap-2">
                 {ALL_STACKS.map((entry) => (
@@ -257,20 +262,20 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
       {/* ------------------------------------------------------------- Results */}
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <p className="text-[13px] text-ink-muted">
-          <span className="font-semibold text-ink tabular-nums">{results.length}</span> of{' '}
-          {PROGRAMS.length} programs
+          <span className="font-semibold text-ink tabular-nums">{results.length}</span> de{' '}
+          {PROGRAMS.length} programas
           {query.trim() && (
             <>
               {' '}
-              matching <span className="font-medium text-ink">“{query.trim()}”</span>
+              que coinciden con <span className="font-medium text-ink">“{query.trim()}”</span>
             </>
           )}
         </p>
         {results.length > 0 && (
           <p className="text-[12px] text-ink-faint">
-            Combined escrow{' '}
+            Depósito en garantía combinado{' '}
             <span className="font-semibold text-ink-muted tabular-nums">
-              {compactNumber(results.reduce((sum, program) => sum + program.bountyMax, 0))} SC
+              {formatUsd(escrowTotal)}
             </span>
           </p>
         )}
@@ -281,13 +286,15 @@ export function ProgramsView({ query, onQueryChange }: ProgramsViewProps) {
           <span className="grid size-12 place-items-center rounded-2xl bg-brand-wash text-brand-ink">
             <Icon name="search" size={22} />
           </span>
-          <h2 className="mt-4 text-[16px] font-semibold text-ink">No programs match those filters</h2>
+          <h2 className="mt-4 text-[16px] font-semibold text-ink">
+            Ningún programa coincide con esos filtros
+          </h2>
           <p className="mt-2 max-w-md text-[13px] text-ink-muted">
-            Try widening the bounty range or clearing a technology filter — the stack list is
-            exact-match, so two selections narrow the directory quickly.
+            Prueba a ampliar el rango de recompensa o a quitar un filtro de tecnología: la lista de
+            stacks exige coincidencia exacta, así que dos selecciones reducen mucho el directorio.
           </p>
           <Button className="mt-5" variant="primary" icon="refresh" onClick={clearAll}>
-            Clear all filters
+            Limpiar todos los filtros
           </Button>
         </Panel>
       ) : (

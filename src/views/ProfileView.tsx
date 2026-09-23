@@ -15,14 +15,14 @@ import { EARNINGS_TREND, REPUTATION_TREND } from '@/data/trends'
 import type { Badge, CompanyId, Severity } from '@/data/types'
 import { university } from '@/data/universities'
 import { CURRENT_USER } from '@/data/user'
-import { cn, compactNumber, formatDate, percent, relativeTime } from '@/lib/format'
+import { cn, formatDate, formatNumber, formatUsd, percent, relativeTime } from '@/lib/format'
 import { SEVERITIES, tierFor } from '@/lib/presentation'
 
 const TIER_ACCENT: Record<Badge['tier'], string> = {
-  Bronze: '#b0713a',
-  Silver: '#8f9aa8',
-  Gold: '#c9971b',
-  Platinum: '#7c8bd6',
+  Bronce: '#b0713a',
+  Plata: '#8f9aa8',
+  Oro: '#c9971b',
+  Platino: '#7c8bd6',
 }
 
 /**
@@ -31,9 +31,9 @@ const TIER_ACCENT: Record<Badge['tier'], string> = {
  * the legend beneath and carries its own icon, so the colour never stands alone.
  */
 const OUTCOME_META = {
-  valid: { label: 'Valid', color: 'var(--status-good)', icon: 'check-circle' },
-  invalid: { label: 'Invalid', color: 'var(--status-critical)', icon: 'alert' },
-  duplicate: { label: 'Duplicate', color: 'var(--solv-ink-faint)', icon: 'copy' },
+  valid: { label: 'Válido', color: 'var(--status-good)', icon: 'check-circle' },
+  invalid: { label: 'Inválido', color: 'var(--status-critical)', icon: 'alert' },
+  duplicate: { label: 'Duplicado', color: 'var(--solv-ink-faint)', icon: 'copy' },
 } as const
 
 type OutcomeKey = keyof typeof OUTCOME_META
@@ -70,13 +70,13 @@ export function ProfileView() {
   return (
     <>
       <ViewHeader
-        title="Profile"
-        description="Your public solver record. Companies see this page when they consider an invitation, so the accuracy ratio matters as much as the headline reputation."
+        title="Perfil"
+        description="Tu historial público como investigador. Las empresas consultan esta página cuando valoran una invitación, así que el ratio de acierto pesa tanto como la reputación total."
         action={
           <>
-            <Button icon="external">View public page</Button>
+            <Button icon="external">Ver página pública</Button>
             <Button variant="primary" icon="sparkles">
-              Edit profile
+              Editar perfil
             </Button>
           </>
         }
@@ -101,50 +101,50 @@ export function ProfileView() {
             <dl className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[13px]">
               <div className="flex items-center gap-1.5">
                 <Icon name="graduation" size={14} className="text-ink-faint" />
-                <dt className="sr-only">University</dt>
+                <dt className="sr-only">Universidad</dt>
                 <dd className="text-ink-muted">{school.name}</dd>
               </div>
               <div className="flex items-center gap-1.5">
                 <Icon name="book" size={14} className="text-ink-faint" />
-                <dt className="sr-only">Programme</dt>
+                <dt className="sr-only">Titulación</dt>
                 <dd className="text-ink-muted">
                   {user.degree} · {user.year}
                 </dd>
               </div>
               <div className="flex items-center gap-1.5">
                 <Icon name="calendar" size={14} className="text-ink-faint" />
-                <dt className="sr-only">Joined</dt>
+                <dt className="sr-only">Se incorporó</dt>
                 <dd className="text-ink-muted">
-                  Joined {formatDate(user.joinedAt, true)} · {relativeTime(user.joinedAt)}
+                  Se incorporó el {formatDate(user.joinedAt, true)} · {relativeTime(user.joinedAt)}
                 </dd>
               </div>
             </dl>
 
             <p className="mt-4 max-w-2xl text-[13px] leading-relaxed text-ink-muted">
-              Working across cryptography and hardware firmware, with a focus on control systems
-              where a defect has a physical consequence. Filing under Safe Harbor v4.2 on every
-              engagement.
+              Trabajo entre criptografía y firmware de hardware, con especial atención a los
+              sistemas de control donde un defecto tiene una consecuencia física. Presento bajo
+              Puerto seguro v4.2 en cada encargo.
             </p>
           </div>
 
           <div className="grid w-full shrink-0 grid-cols-2 gap-4 border-t border-hairline-soft pt-5 sm:w-auto sm:grid-cols-3 sm:border-0 sm:pt-0 lg:grid-cols-1 lg:text-right">
             <div>
-              <p className="text-[11px] tracking-[0.12em] text-ink-faint uppercase">Global rank</p>
+              <p className="text-[11px] tracking-[0.12em] text-ink-faint uppercase">Puesto global</p>
               <p className="mt-1 text-[20px] leading-none font-semibold tabular-nums text-ink">
                 #{user.rank}
               </p>
             </div>
             <div>
-              <p className="text-[11px] tracking-[0.12em] text-ink-faint uppercase">Reputation</p>
+              <p className="text-[11px] tracking-[0.12em] text-ink-faint uppercase">Reputación</p>
               <p className="mt-1 text-[20px] leading-none font-semibold text-ink">
-                {compactNumber(user.reputation)}
+                {formatNumber(user.reputation)}
               </p>
             </div>
             <div>
-              <p className="text-[11px] tracking-[0.12em] text-ink-faint uppercase">Streak</p>
+              <p className="text-[11px] tracking-[0.12em] text-ink-faint uppercase">Racha</p>
               <p className="mt-1 text-[20px] leading-none font-semibold text-ink">
                 {user.streakWeeks}
-                <span className="ml-1 text-[12px] font-normal text-ink-muted">wks</span>
+                <span className="ml-1 text-[12px] font-normal text-ink-muted">sem</span>
               </p>
             </div>
           </div>
@@ -155,8 +155,8 @@ export function ProfileView() {
       <div className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
         <Panel className="p-5 sm:p-6">
           <PanelHeader
-            title="Report quality"
-            description="The ratio companies weigh most heavily. A duplicate counts against you the same as an invalid report."
+            title="Calidad de los reportes"
+            description="El ratio que más pesan las empresas. Un duplicado cuenta en tu contra igual que un reporte inválido."
             icon={<Icon name="target" size={17} />}
             className="px-0 pt-0"
           />
@@ -168,7 +168,7 @@ export function ProfileView() {
                 {percent(validShare, 1)}
               </p>
               <p className="mt-2 text-[13px] text-ink-muted">
-                valid — {outcomes.valid} of {total} reports filed
+                válidos — {outcomes.valid} de {total} reportes presentados
               </p>
             </div>
 
@@ -176,13 +176,13 @@ export function ProfileView() {
               <Sparkline
                 points={EARNINGS_TREND}
                 tone="var(--viz-series-1)"
-                label="Settled reward over the last twelve months"
+                label="Recompensa liquidada en los últimos doce meses"
                 width={220}
                 height={56}
                 className="w-full"
               />
               <p className="mt-2 text-[11.5px] text-ink-faint">
-                Settled reward, last twelve months
+                Recompensa liquidada, últimos doce meses
               </p>
             </div>
           </div>
@@ -220,31 +220,35 @@ export function ProfileView() {
           </ul>
 
           <p className="mt-5 border-t border-hairline-soft pt-4 text-[12px] leading-relaxed text-ink-muted">
-            Your ratio sits {validShare >= 0.8 ? 'above' : 'below'} the platform median of 74%.
-            Two of your six invalid reports were out-of-scope submissions on briefs that had been
-            amended after you began work — the platform does not currently discount those, and an
-            appeal is open on both.
+            Tu ratio queda {validShare >= 0.8 ? 'por encima' : 'por debajo'} de la mediana de la
+            plataforma, que es del 74 %. Dos de tus seis reportes inválidos fueron envíos fuera de
+            alcance sobre convocatorias que se modificaron después de que empezaras a trabajar: la
+            plataforma todavía no los descuenta, y ambos tienen una apelación abierta.
           </p>
         </Panel>
 
         <div className="space-y-5">
           <Panel className="p-5 sm:p-6">
             <PanelHeader
-              title="Standing"
-              description={tier.next ? `Next tier at ${compactNumber(user.nextTierAt)} reputation.` : 'Top tier reached.'}
+              title="Posición"
+              description={
+                tier.next
+                  ? `Próximo rango a ${formatNumber(user.nextTierAt)} de reputación.`
+                  : 'Rango máximo alcanzado.'
+              }
               icon={<Icon name="trending-up" size={17} />}
               className="px-0 pt-0"
             />
 
             <p className="mt-5 text-[22px] leading-none font-semibold text-ink">
-              {compactNumber(user.reputation)}
-              <span className="ml-2 text-[12.5px] font-normal text-ink-muted">reputation</span>
+              {formatNumber(user.reputation)}
+              <span className="ml-2 text-[12.5px] font-normal text-ink-muted">reputación</span>
             </p>
 
             <Sparkline
               points={REPUTATION_TREND}
               tone="var(--viz-series-1)"
-              label="Reputation over the last twelve months"
+              label="Reputación en los últimos doce meses"
               width={280}
               height={56}
               className="mt-4 w-full"
@@ -253,20 +257,20 @@ export function ProfileView() {
             <div className="mt-5">
               <div className="flex items-baseline justify-between gap-3 text-[12px]">
                 <span className="text-ink-muted">{tier.current}</span>
-                <span className="text-ink-faint">{tier.next ?? 'Highest tier'}</span>
+                <span className="text-ink-faint">{tier.next ?? 'Rango máximo'}</span>
               </div>
               <Meter value={tier.progress} className="mt-2" height={7} />
               <p className="mt-2 text-[11.5px] text-ink-faint">
                 {tier.next
-                  ? `${compactNumber(reputationToNext)} reputation to ${user.nextTierName}`
-                  : 'You hold the platform’s highest rank.'}
+                  ? `${formatNumber(reputationToNext)} de reputación para ${user.nextTierName}`
+                  : 'Tienes el rango más alto de la plataforma.'}
               </p>
             </div>
           </Panel>
 
           <Panel className="p-5 sm:p-6">
             <PanelHeader
-              title="University"
+              title="Universidad"
               icon={<Icon name="graduation" size={17} />}
               action={
                 <Chip size="xs" tone={school.accent}>
@@ -280,14 +284,14 @@ export function ProfileView() {
 
             <dl className="mt-5 space-y-3 text-[12.5px]">
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-ink-muted">Registered solvers</dt>
+                <dt className="text-ink-muted">Investigadores registrados</dt>
                 <dd className="font-semibold tabular-nums text-ink">
-                  {compactNumber(school.solvers)}
+                  {formatNumber(school.solvers)}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-ink-muted">Your standing</dt>
-                <dd className="font-semibold text-ink">#1 of {compactNumber(school.solvers)}</dd>
+                <dt className="text-ink-muted">Tu posición</dt>
+                <dd className="font-semibold text-ink">n.º 1 de {formatNumber(school.solvers)}</dd>
               </div>
             </dl>
 
@@ -306,18 +310,18 @@ export function ProfileView() {
       <div className="grid gap-5 xl:grid-cols-2">
         <Panel className="p-5 sm:p-6">
           <PanelHeader
-            title="Findings by severity"
-            description="Everything you have filed this term, banded the way triagers read it."
+            title="Hallazgos por severidad"
+            description="Todo lo que has presentado este curso, agrupado tal y como lo leen los triadores."
             icon={<Icon name="alert" size={17} />}
             className="px-0 pt-0"
           />
-          <SeverityBars counts={severityCounts} unit="Findings" className="mt-6" />
+          <SeverityBars counts={severityCounts} unit="Hallazgos" className="mt-6" />
         </Panel>
 
         <Panel className="p-5 sm:p-6">
           <PanelHeader
-            title="Where the work lands"
-            description="Reward concentration across the five client companies."
+            title="Dónde acaba el trabajo"
+            description="Concentración de las recompensas entre las cinco empresas cliente."
             icon={<Icon name="building" size={17} />}
             className="px-0 pt-0"
           />
@@ -326,7 +330,7 @@ export function ProfileView() {
               const employer = company(id)
               const reports = SUBMISSIONS.filter((item) => item.companyId === employer.id).length
               const settled = SUBMISSIONS.filter(
-                (item) => item.companyId === employer.id && item.state === 'Paid',
+                (item) => item.companyId === employer.id && item.state === 'Pagado',
               ).reduce((sum, item) => sum + item.payout, 0)
 
               return (
@@ -342,15 +346,15 @@ export function ProfileView() {
                     height={6}
                   />
                   <span className="w-24 shrink-0 text-right text-[12px] tabular-nums text-ink-muted">
-                    {compactNumber(settled)} {employer.currency.code}
+                    {formatUsd(settled)}
                   </span>
                 </li>
               )
             })}
           </ul>
           <p className="mt-5 border-t border-hairline-soft pt-4 text-[11.5px] leading-relaxed text-ink-faint">
-            Bar length is reports filed, not reward — a single Elite brief can settle for more
-            than a dozen small ones.
+            La longitud de la barra son reportes presentados, no recompensa: una sola convocatoria
+            de élite puede liquidarse por más que una docena de pequeñas.
           </p>
         </Panel>
       </div>
@@ -360,11 +364,11 @@ export function ProfileView() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-[19px] leading-tight font-semibold tracking-tight text-ink">
-              Achievements
+              Logros
             </h2>
             <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              {earnedBadges.length} of {user.badges.length} earned. Badges are permanent once
-              awarded.
+              {earnedBadges.length} de {user.badges.length} conseguidos. Las insignias son
+              permanentes una vez otorgadas.
             </p>
           </div>
           <Chip size="sm" icon="trophy">
@@ -405,13 +409,13 @@ export function ProfileView() {
                 {earned ? (
                   <p className="mt-4 flex items-center gap-1.5 text-[11.5px] text-ink-faint">
                     <Icon name="check-circle" size={13} style={{ color: 'var(--status-good)' }} />
-                    Earned {formatDate(badge.earnedAt!, true)}
+                    Obtenida el {formatDate(badge.earnedAt!, true)}
                   </p>
                 ) : (
                   <div className="mt-4">
                     <Meter value={badge.progress ?? 0} height={5} />
                     <p className="mt-2 text-[11.5px] text-ink-faint">
-                      {percent(badge.progress ?? 0, 0)} complete
+                      {percent(badge.progress ?? 0, 0)} completado
                     </p>
                   </div>
                 )}

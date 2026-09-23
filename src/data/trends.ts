@@ -22,15 +22,18 @@ export const RANK_TREND: TrendPoint[] = [
   value,
 }))
 
-/** Reports filed per month, across every programme. */
+/**
+ * Every report filed that month, including the ones still open, so the series
+ * runs ahead of the settled counts on the profile.
+ */
 export const SUBMISSIONS_TREND: TrendPoint[] = [
-  3, 4, 2, 5, 6, 4, 7, 3, 9, 11, 14, 6,
+  3, 4, 2, 5, 6, 4, 7, 3, 8, 9, 7, 4,
 ].map((value, index) => ({
   label: MONTHLY_EARNINGS[index]?.label ?? '',
   value,
 }))
 
-/** Share of submitted reports that reached Accepted or Paid, per month. */
+/** Share of submitted reports that reached Aceptado or Pagado, per month. */
 export const ACCURACY_TREND: TrendPoint[] = [
   0.62, 0.65, 0.63, 0.69, 0.71, 0.7, 0.74, 0.72, 0.77, 0.79, 0.8, 0.8,
 ].map((value, index) => ({

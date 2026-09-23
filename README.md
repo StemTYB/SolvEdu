@@ -1,13 +1,17 @@
-# SolvEDU — Technical Bounty Hunter Platform UI
+# SolvEDU — Plataforma de recompensas por hallazgos técnicos
 
 A "Liquid Glass" interface for a fictional bounty platform that connects invented
 companies (Stark Industries, Wayne Enterprises, Umbrella Corp, Aperture Science,
 Oscorp) with students from invented universities (Monsters University, Hogwarts,
 Xavier Institute, Miskatonic University, Gotham University).
 
-Everything in it — companies, universities, programmes, people, currencies,
-payouts — is invented for demonstration. Nothing here talks to a server; all data
-lives in `src/data/` as typed constants.
+Everything in it — companies, universities, programmes, people, awards, payouts —
+is invented for demonstration. Nothing here talks to a server; all data lives in
+`src/data/` as typed constants.
+
+> **Note on language.** This README and the source comments are in English; the
+> interface copy and every seeded data string are in Spanish. See
+> [Language, currency and award bands](#language-currency-and-award-bands).
 
 ## Running it
 
@@ -17,6 +21,7 @@ npm run dev        # dev server, http://localhost:5173
 npm run build      # tsc -b && vite build -> dist/
 npm run preview    # serve the production build
 npm run typecheck  # tsc -b, no emit
+npm run verify     # check the hand-authored ledger against its own invariants
 ```
 
 Requires Node 20+ (developed on Node 24).
@@ -43,8 +48,9 @@ src/
 ├─ lib/
 │  ├─ routes.ts             route ids, nav groups, page titles
 │  ├─ router.ts             useRoute() (hash), useTheme()
-│  ├─ format.ts             number/date/relative-time formatting
-│  └─ presentation.ts       severity, pipeline-state & payout-state metadata
+│  ├─ format.ts             USD, number, date & relative-time formatting
+│  └─ presentation.ts       severity, pipeline-state & payout-state metadata,
+│                           difficulty bands, rank tiers
 ├─ data/                    fictional dataset — companies, universities,
 │                           programs, submissions, leaderboard, earnings,
 │                           hacktivity, badges, resources, trends
@@ -57,9 +63,24 @@ src/
 └─ views/                   the nine screens
 ```
 
-The nine navigation categories map one-to-one onto `src/views/`: Dashboard,
-Programs & Challenges, My Submissions, Submit Report, Leaderboard, Profile,
-Earnings & Wallet, Hacktivity, Resources & Guidelines.
+The nine navigation categories map one-to-one onto `src/views/`. The nav labels,
+page titles and route ids are three separate strings:
+
+| Route id (English, = URL hash) | Nav label / page title (Spanish) | `src/views/` |
+|---|---|---|
+| `dashboard` | Panel | `DashboardView` |
+| `programs` | Programas y retos | `ProgramsView` |
+| `submissions` | Mis reportes | `SubmissionsView` |
+| `submit` | Enviar reporte | `SubmitReportView` |
+| `leaderboard` | Clasificación | `LeaderboardView` |
+| `profile` | Perfil | `ProfileView` |
+| `wallet` | Ganancias y cartera | `WalletView` |
+| `hacktivity` | Hacktividad | `HacktivityView` |
+| `resources` | Recursos y directrices | `ResourcesView` |
+
+**Route ids stay English on purpose.** They are the `location.hash` fragments, so
+translating them would silently break every existing deep link. Only the labels
+are user-visible; `src/lib/routes.ts` carries a comment saying so.
 
 ## The Liquid Glass recipe
 
@@ -103,6 +124,28 @@ Because the panels are translucent, dark mode is a **separate set of steps**, no
 an inverted light mode — the dark surfaces are darker and the series hues are
 re-stepped to hold their contrast against a near-black ground.
 
+## The ledger is checked, not trusted
+
+The money in this app is hand-authored constants that quote each other across five
+files, so `npm run verify` asserts the invariants rather than leaving them to grow
+apart. It walks 25 of them, including:
+
+- `sum(MONTHLY_EARNINGS.amount) === LIFETIME_EARNINGS === sum(WALLET_ACCOUNTS.lifetime)`,
+  and `sum(MONTHLY_EARNINGS.payouts) === LIFETIME_PAYOUTS`
+- **per company**, `available` equals that company's settled ("Pagado") awards and
+  `pending` equals its accepted ("Aceptado") ones — so the wallet and the
+  submissions table cannot tell different stories, and a matching total cannot
+  hide two mismatched companies
+- settled awards ≤ valid reports (a solver cannot be paid more times than they
+  filed successfully)
+- every programme's `bountyMin`/`bountyMax` equals its `DIFFICULTY_BANDS` entry
+  exactly, the directory floor is $100 and its ceiling $3,000
+- every award on a report and on the public hacktivity feed sits inside the band of
+  the programme it was filed against
+- every payout row names a real report and quotes the same amount
+- the leaderboard's `isCurrentUser` row mirrors `CURRENT_USER` on rank, reputation
+  and valid reports, and its `earned` equals `LIFETIME_EARNINGS`
+
 ## Colour: two systems that must not be confused
 
 **Status** — reserved, fixed, never themed, never reused as a data series:
@@ -113,7 +156,7 @@ stays in ink, which is what keeps `--status-warning` (#fab219, 1.79:1 on light)
 legible — it is never used as text.
 
 **Categorical** — five fixed slots, assigned in order, for report pipeline state
-(Pending → Triaged → Accepted → Duplicated → Paid). These are five workflow
+(Pendiente → Triaje → Aceptado → Duplicado → Pagado). These are five workflow
 stages with no good/bad ordering, so a status colour would be wrong here.
 
 ### Palette validation
@@ -170,7 +213,7 @@ ink rather than the series colour, and tabular figures only inside table columns
 
 ## Accessibility notes
 
-- One `<h1>` per view, from `ViewHeader`.
+- One `<h1>` per view, from `ViewHeader`, and the page `<html lang>` is `es`.
 - Every view was rendered headlessly at 390, 768 and 1440px and checked for
   horizontal overflow: **none**, at any width. Wide tables scroll inside their own
   `overflow-x-auto` container rather than scrolling the page.
@@ -181,10 +224,51 @@ ink rather than the series colour, and tabular figures only inside table columns
 - The palette validator's checks are colour-math checks, not a substitute for
   reading the rendered page; treat the numbers above as necessary, not sufficient.
 
+## Language, currency and award bands
+
+**Language.** Interface copy — menus, titles, buttons, table headers, empty states,
+`aria-label`s, `sr-only` text and every seeded data string — is Spanish. Two things
+are deliberately left in English: **source comments** (they sit next to English
+identifiers and type names) and **route ids** (they are URL fragments). TypeScript
+union members that double as `Record` keys and literal comparands are Spanish too
+(`Severity`, `SubmissionState`, `PayoutState`, `Difficulty`, `Scope`, `Category`,
+`ResourceDoc['category']`, `Badge['tier']`), because those values are rendered
+directly.
+
+**Currency.** The platform settles in **US dollars only**; the earlier fictional
+multi-currency layer is gone, along with the `Currency` interface and every
+`currency`/`currencyCode` field. `src/lib/format.ts` owns the two formats:
+
+```ts
+formatUsd(3000)       // "$3,000 USD"  — inline mentions and table cells
+formatUsdShort(3000)  // "$3,000"      — display figures whose unit is stated beside them
+formatNumber(8420)    // "8,420"       — reputation and counts, grouped the same way
+```
+
+The hero and stat figures use `formatUsdShort` plus a separate smaller `USD` span,
+because the full string reads too long at 48–56px. Reputation is a *score*, not
+money, so it keeps `formatNumber` and never gains a `$`.
+
+**Award bands.** `DIFFICULTY_BANDS` in `src/lib/presentation.ts` is the single
+source of truth; every programme in `src/data/programs.ts` takes its
+`bountyMin`/`bountyMax` from it, so the directory spans exactly the published range:
+
+| Difficulty | Band |
+|---|---|
+| Inicial (low) | $100 – $400 |
+| Intermedia | $400 – $1,000 |
+| Avanzada | $1,000 – $2,000 |
+| Élite (critical/high) | $2,000 – $3,000 |
+
+The programmes-directory slider steps in $100 increments (`BOUNTY_STEP`), one notch
+per band the directory can actually hit. Both the report ledger and the public
+hacktivity feed are checked against these bands, so no award can be recorded
+outside the band of the programme it was filed against.
+
 ## Scope
 
 Presentation only. There is no backend, no authentication, no persistence beyond
 the theme preference in `localStorage`, and the "submit report" flow ends in local
-component state. Amounts in different company currencies are additive because the
-fictional ledger defines them as settling 1:1 — that is a property of the invented
+component state. Because every award is denominated in USD, balances across the
+five client companies sum without conversion — that is a property of the invented
 setting, not a claim about real currency handling.

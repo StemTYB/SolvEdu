@@ -3,12 +3,23 @@ export function cn(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(' ')
 }
 
-/**
- * Compact currency for stat tiles and dense tables.
- * `compactCurrency(284500, 'SC')` -> `"284.5K SC"`
+/*
+ * Money is always whole US dollars, always in the same shape: "$3,000 USD".
+ * Grouping is en-US (comma thousands) because that is the convention for USD
+ * amounts; the surrounding copy is what is localised, not the number.
+ * The " USD" suffix is part of the format on purpose — every amount on this
+ * platform settles in dollars, so the code is stated rather than implied.
  */
-export function compactCurrency(amount: number, code: string): string {
-  return `${compactNumber(amount)} ${code}`
+const USD_FMT = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
+
+/** `formatUsd(3000)` -> `"$3,000 USD"` */
+export function formatUsd(amount: number): string {
+  return `$${USD_FMT.format(amount)} USD`
+}
+
+/** `formatUsdShort(3000)` -> `"$3,000"` — for cells whose column header names the unit. */
+export function formatUsdShort(amount: number): string {
+  return `$${USD_FMT.format(amount)}`
 }
 
 /** `compactNumber(1284)` -> `"1,284"`, `compactNumber(12900)` -> `"12.9K"` */
@@ -36,6 +47,14 @@ export function compactNumber(value: number, maximumFractionDigits = 1): string 
   return String(value)
 }
 
+/**
+ * A plain grouped integer — reputation, counts, seat totals.
+ * Grouping matches the money format, so a page never mixes "1,520" with "1.520".
+ */
+export function formatNumber(value: number): string {
+  return USD_FMT.format(value)
+}
+
 /** Rating-style numbers keep one decimal: `4` -> `"4.0"` */
 export function oneDecimal(value: number): string {
   return value.toFixed(1)
@@ -52,10 +71,10 @@ export function percent(ratio: number, digits = 0): string {
   return `${(ratio * 100).toFixed(digits)}%`
 }
 
-const DATE_FMT = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' })
-const DATE_YEAR_FMT = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
+const DATE_FMT = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' })
+const DATE_YEAR_FMT = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',
+  month: 'short',
   year: 'numeric',
 })
 
@@ -73,9 +92,9 @@ const UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
   ['minute', 60 * 1000],
 ]
 
-const RELATIVE_FMT = new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' })
+const RELATIVE_FMT = new Intl.RelativeTimeFormat('es-ES', { numeric: 'auto' })
 
-/** `"3 days ago"` / `"in 2 weeks"`, relative to `now`. */
+/** `"hace 3 días"` / `"dentro de 2 semanas"`, relative to `now`. */
 export function relativeTime(iso: string, now: Date = new Date()): string {
   const delta = new Date(iso).getTime() - now.getTime()
 
@@ -85,7 +104,7 @@ export function relativeTime(iso: string, now: Date = new Date()): string {
     }
   }
 
-  return 'just now'
+  return 'ahora mismo'
 }
 
 /** Days remaining, floored at zero: used for bounty deadlines. */

@@ -10,14 +10,14 @@ import { COMPANIES } from '@/data/companies'
 import { HACKTIVITY } from '@/data/hacktivity'
 import { university } from '@/data/universities'
 import type { Severity } from '@/data/types'
-import { cn, compactNumber, relativeTime } from '@/lib/format'
+import { cn, compactNumber, formatUsd, relativeTime } from '@/lib/format'
 import { SEVERITIES } from '@/lib/presentation'
 
-type SeverityFilter = 'All' | Severity
+type SeverityFilter = 'Todos' | Severity
 
 export function HacktivityView() {
   const [companies, setCompanies] = useState<Set<string>>(new Set())
-  const [severity, setSeverity] = useState<SeverityFilter>('All')
+  const [severity, setSeverity] = useState<SeverityFilter>('Todos')
   const [disclosedOnly, setDisclosedOnly] = useState(false)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
 
@@ -25,7 +25,7 @@ export function HacktivityView() {
     () =>
       HACKTIVITY.filter((event) => {
         if (companies.size && !companies.has(event.companyId)) return false
-        if (severity !== 'All' && event.severity !== severity) return false
+        if (severity !== 'Todos' && event.severity !== severity) return false
         if (disclosedOnly && !event.disclosed) return false
         return true
       }),
@@ -33,7 +33,7 @@ export function HacktivityView() {
   )
 
   const severityOptions: Array<{ value: SeverityFilter; label: string; count: number }> = [
-    { value: 'All', label: 'All', count: HACKTIVITY.length },
+    { value: 'Todos', label: 'Todos', count: HACKTIVITY.length },
     ...SEVERITIES.map((entry) => ({
       value: entry,
       label: entry,
@@ -53,11 +53,11 @@ export function HacktivityView() {
   return (
     <>
       <ViewHeader
-        title="Hacktivity"
-        description="A public feed of recently resolved reports, published with the researcher's consent. Read these before you file — most duplicates are rewrites of something already solved here."
+        title="Hacktividad"
+        description="Un feed público de reportes resueltos recientemente, publicados con el consentimiento de quien los presentó. Léelos antes de enviar nada: la mayoría de los duplicados son reescrituras de algo ya resuelto aquí."
         action={
           <Chip icon="users" size="sm">
-            {compactNumber(2_140)} following
+            {compactNumber(2_140)} siguiendo
           </Chip>
         }
       />
@@ -65,7 +65,7 @@ export function HacktivityView() {
       <Panel className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <Segmented
-            label="Filter by severity"
+            label="Filtrar por severidad"
             options={severityOptions}
             value={severity}
             onChange={setSeverity}
@@ -100,7 +100,7 @@ export function HacktivityView() {
               )}
             >
               <Icon name={disclosedOnly ? 'check' : 'eye'} size={13} />
-              Disclosed only
+              Solo divulgados
             </button>
           </div>
         </div>
@@ -111,9 +111,9 @@ export function HacktivityView() {
           <span className="grid size-12 place-items-center rounded-2xl bg-brand-wash text-brand-ink">
             <Icon name="activity" size={22} />
           </span>
-          <h2 className="mt-4 text-[16px] font-semibold text-ink">Nothing in that slice</h2>
+          <h2 className="mt-4 text-[16px] font-semibold text-ink">Nada en esa combinación</h2>
           <p className="mt-2 max-w-md text-[13px] text-ink-muted">
-            Widen the severity filter or drop a company to see more of the feed.
+            Amplía el filtro de severidad o quita una empresa para ver más del feed.
           </p>
         </Panel>
       ) : (
@@ -142,7 +142,7 @@ export function HacktivityView() {
                         <span className="text-ink-faint">{relativeTime(event.at)}</span>
                         {event.disclosed && (
                           <Chip size="xs" icon="eye" className="ml-1">
-                            Disclosed
+                            Divulgado
                           </Chip>
                         )}
                       </div>
@@ -165,14 +165,14 @@ export function HacktivityView() {
                           <span className="inline-flex items-center gap-1.5 text-[12.5px]">
                             <Icon name="coins" size={14} className="text-ink-faint" />
                             <span className="font-semibold tabular-nums text-ink">
-                              {compactNumber(event.payout)} {event.currencyCode}
+                              {formatUsd(event.payout)}
                             </span>
-                            <span className="text-ink-faint">awarded</span>
+                            <span className="text-ink-faint">otorgados</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-faint">
                             <Icon name="clock" size={14} />
-                            Award pending triage
+                            Recompensa pendiente de triaje
                           </span>
                         )}
 

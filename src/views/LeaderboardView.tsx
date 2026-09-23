@@ -10,7 +10,7 @@ import { LEADERBOARD, TOTAL_SOLVERS } from '@/data/leaderboard'
 import type { LeaderboardEntry, UniversityId } from '@/data/types'
 import { UNIVERSITIES, university } from '@/data/universities'
 import { CURRENT_USER } from '@/data/user'
-import { cn, compactNumber, percent } from '@/lib/format'
+import { cn, compactNumber, formatUsd, percent } from '@/lib/format'
 
 const MEDAL_ACCENT: Record<number, string> = {
   1: '#d4a017',
@@ -36,7 +36,7 @@ function TrendCell({ trend }: { trend: number }) {
     >
       <Icon name={up ? 'arrow-up' : 'arrow-down'} size={13} />
       <span className="tabular-nums">{Math.abs(trend)}</span>
-      <span className="sr-only">{up ? 'places gained' : 'places lost'}</span>
+      <span className="sr-only">{up ? 'puestos ganados' : 'puestos perdidos'}</span>
     </span>
   )
 }
@@ -80,10 +80,10 @@ function PodiumCard({ entry, place }: { entry: LeaderboardEntry; place: number }
         <p className="mt-4 text-[24px] leading-none font-bold tracking-tight text-ink">
           {compactNumber(entry.reputation)}
         </p>
-        <p className="mt-1 text-[11px] tracking-[0.12em] text-ink-faint uppercase">reputation</p>
+        <p className="mt-1 text-[11px] tracking-[0.12em] text-ink-faint uppercase">reputación</p>
 
         <p className="mt-3 text-[12px] text-ink-muted">
-          {compactNumber(entry.earned)} SC earned · {percent(entry.accuracy, 1)} valid
+          {formatUsd(entry.earned)} ganados · {percent(entry.accuracy, 1)} válidos
         </p>
       </div>
     </Panel>
@@ -104,19 +104,19 @@ export function LeaderboardView() {
   return (
     <>
       <ViewHeader
-        title="Leaderboard"
-        description="Ranks are global and recomputed nightly. Filtering by university narrows the list without re-ranking it — a #7 is seventh everywhere."
+        title="Clasificación"
+        description="La clasificación es global y se recalcula cada noche. Filtrar por universidad acorta la lista sin reordenarla: un n.º 7 sigue siendo séptimo en todas partes."
         action={
           <>
             <Chip icon="refresh" size="sm">
-              Updated 04:00 UTC
+              Actualizado a las 04:00 UTC
             </Chip>
           </>
         }
       />
 
       {school === 'all' && (
-        <section aria-label="Top three" className="grid gap-4 sm:grid-cols-3">
+        <section aria-label="Los tres primeros" className="grid gap-4 sm:grid-cols-3">
           {[podium[1], podium[0], podium[2]].map((entry) =>
             entry ? <PodiumCard key={entry.handle} entry={entry} place={entry.rank} /> : null,
           )}
@@ -127,11 +127,11 @@ export function LeaderboardView() {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-4 sm:px-6">
           <div className="flex items-center gap-2 text-ink-muted">
             <Icon name="graduation" size={16} />
-            <span className="text-[12.5px] font-semibold">University</span>
+            <span className="text-[12.5px] font-semibold">Universidad</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <FilterChip active={school === 'all'} onClick={() => setSchool('all')} count={LEADERBOARD.length}>
-              All
+              Todas
             </FilterChip>
             {UNIVERSITIES.map((entry) => (
               <FilterChip
@@ -146,25 +146,25 @@ export function LeaderboardView() {
             ))}
           </div>
           <p className="ml-auto text-[12px] text-ink-faint">
-            {compactNumber(TOTAL_SOLVERS)} active solvers
+            {compactNumber(TOTAL_SOLVERS)} investigadores activos
           </p>
         </div>
 
         <div className="overflow-x-auto border-t border-hairline-soft">
           <table className="w-full min-w-[820px] border-collapse text-left">
             <caption className="sr-only">
-              Global solver standings: rank, reputation, lifetime earnings, valid reports, accuracy
-              and thirty-day movement.
+              Clasificación global de investigadores: puesto, reputación, ganancias históricas,
+              reportes válidos, precisión y movimiento en treinta días.
             </caption>
             <thead>
               <tr className="text-[11px] font-semibold tracking-[0.12em] text-ink-faint uppercase">
                 <th scope="col" className="px-5 py-3 sm:px-6">#</th>
-                <th scope="col" className="px-3 py-3">Solver</th>
-                <th scope="col" className="px-3 py-3">University</th>
-                <th scope="col" className="px-3 py-3 text-right">Reputation</th>
-                <th scope="col" className="px-3 py-3 text-right">Earned</th>
-                <th scope="col" className="px-3 py-3 text-right">Valid</th>
-                <th scope="col" className="px-3 py-3">Accuracy</th>
+                <th scope="col" className="px-3 py-3">Investigador</th>
+                <th scope="col" className="px-3 py-3">Universidad</th>
+                <th scope="col" className="px-3 py-3 text-right">Reputación</th>
+                <th scope="col" className="px-3 py-3 text-right">Ganado</th>
+                <th scope="col" className="px-3 py-3 text-right">Válidos</th>
+                <th scope="col" className="px-3 py-3">Precisión</th>
                 <th scope="col" className="px-5 py-3 text-right sm:px-6">30d</th>
               </tr>
             </thead>
@@ -196,7 +196,7 @@ export function LeaderboardView() {
                             {entry.displayName}
                             {entry.isCurrentUser && (
                               <Chip size="xs" tone="var(--solv-brand)">
-                                You
+                                Tú
                               </Chip>
                             )}
                           </p>
@@ -216,7 +216,7 @@ export function LeaderboardView() {
                     </td>
                     <td className="px-3 py-3.5 text-right">
                       <span className="text-[12.5px] tabular-nums text-ink-muted">
-                        {compactNumber(entry.earned)} SC
+                        {formatUsd(entry.earned)}
                       </span>
                     </td>
                     <td className="px-3 py-3.5 text-right">
@@ -253,7 +253,7 @@ export function LeaderboardView() {
 
         {filtered.length === 0 && (
           <p className="px-6 py-12 text-center text-[13px] text-ink-muted">
-            No ranked solvers from that university yet.
+            Aún no hay investigadores clasificados de esa universidad.
           </p>
         )}
 
@@ -270,7 +270,7 @@ export function LeaderboardView() {
             />
             <span className="text-[13px] font-medium text-ink">{CURRENT_USER.displayName}</span>
             <Chip size="xs" tone="var(--solv-brand)">
-              You
+              Tú
             </Chip>
             <span className="ml-auto text-[12.5px] font-semibold tabular-nums text-ink">
               {compactNumber(CURRENT_USER.reputation)}
@@ -281,16 +281,16 @@ export function LeaderboardView() {
 
       <Panel className="p-5 sm:p-6">
         <PanelHeader
-          title="How rank is computed"
-          description="Reputation is weighted by severity band, scope difficulty and the accuracy of your history. It decays slowly if you stop filing, so the board rewards people who are still active."
+          title="Cómo se calcula el puesto"
+          description="La reputación pondera la banda de severidad, la dificultad del alcance y la precisión de tu historial. Decae despacio si dejas de enviar reportes, así que la tabla premia a quien sigue activo."
           icon={<Icon name="info" size={17} />}
           className="px-0 pt-0"
         />
         <dl className="mt-5 grid gap-5 sm:grid-cols-3">
           {[
-            ['Severity weight', '40%', 'Critical findings carry five times an Informational.'],
-            ['Accuracy', '35%', 'Valid ÷ total submitted. Duplicates are counted as invalid.'],
-            ['Scope difficulty', '25%', 'Elite briefs and physical-access work score highest.'],
+            ['Peso de la severidad', '40 %', 'Un hallazgo crítico vale cinco veces uno informativo.'],
+            ['Precisión', '35 %', 'Válidos ÷ total presentado. Los duplicados cuentan como no válidos.'],
+            ['Dificultad del alcance', '25 %', 'Las convocatorias de élite y el acceso físico puntúan más alto.'],
           ].map(([term, value, description]) => (
             <div key={term}>
               <dt className="flex items-baseline gap-2 text-[12.5px] font-semibold text-ink">

@@ -53,14 +53,14 @@ export function PipelineBar({ counts, className }: PipelineBarProps) {
                   y: own.top - bounds.top,
                   title: state,
                   rows: [
-                    { label: 'Reports', value: String(count), color: stateColor(state) },
-                    { label: 'Share', value: `${(share * 100).toFixed(1)}%` },
+                    { label: 'Reportes', value: String(count), color: stateColor(state) },
+                    { label: 'Proporción', value: `${(share * 100).toFixed(1)} %` },
                   ],
                 })
               }}
             >
               <span className="sr-only">
-                {state}: {count} of {total}
+                {state}: {count} de {total}
               </span>
             </div>
           )

@@ -18,7 +18,7 @@ interface SeverityBarsProps {
  * bar is labelled with its icon and name, so the level survives full-severity
  * colour blindness. Bars grow from a shared baseline; the value sits at the tip.
  */
-export function SeverityBars({ counts, className, unit = 'Findings' }: SeverityBarsProps) {
+export function SeverityBars({ counts, className, unit = 'Hallazgos' }: SeverityBarsProps) {
   const [tip, setTip] = useState<TooltipState | null>(null)
   const max = Math.max(...SEVERITIES.map((severity) => counts[severity]), 1)
   const total = SEVERITIES.reduce((sum, severity) => sum + counts[severity], 0)
@@ -54,8 +54,8 @@ export function SeverityBars({ counts, className, unit = 'Findings' }: SeverityB
                     rows: [
                       { label: unit, value: String(count), color: meta.color },
                       {
-                        label: 'Share',
-                        value: total ? `${((count / total) * 100).toFixed(0)}%` : '0%',
+                        label: 'Proporción',
+                        value: total ? `${((count / total) * 100).toFixed(0)} %` : '0 %',
                       },
                     ],
                   })

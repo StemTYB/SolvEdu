@@ -5,7 +5,7 @@ import { Monogram } from '@/components/ui/Monogram'
 import { Panel } from '@/components/ui/Panel'
 import type { Program } from '@/data/types'
 import { company } from '@/data/companies'
-import { cn, compactNumber, daysUntil, formatDate } from '@/lib/format'
+import { cn, daysUntil, formatDate, formatUsd, formatUsdShort } from '@/lib/format'
 import { DIFFICULTY_META } from '@/lib/presentation'
 
 interface ProgramCardProps {
@@ -52,7 +52,7 @@ export function ProgramCard({ program, onOpen, compact, className }: ProgramCard
           <div className="flex items-start justify-between gap-3">
             <p className="truncate text-[12.5px] font-semibold text-ink">{employer.name}</p>
             <Chip tone="var(--solv-brand)" size="xs">
-              {Math.round(program.match * 100)}% match
+              Afinidad {Math.round(program.match * 100)} %
             </Chip>
           </div>
           <h3 className="mt-1 text-[14.5px] leading-snug font-semibold text-ink">
@@ -71,7 +71,7 @@ export function ProgramCard({ program, onOpen, compact, className }: ProgramCard
         <DifficultyPips program={program} />
         {program.safeHarbor && (
           <Chip size="xs" icon="shield">
-            Safe Harbor
+            Puerto seguro
           </Chip>
         )}
       </div>
@@ -93,13 +93,10 @@ export function ProgramCard({ program, onOpen, compact, className }: ProgramCard
         <div className="flex flex-wrap items-end justify-between gap-3 border-t border-hairline-soft pt-3.5">
           <div>
             <p className="text-[10.5px] font-semibold tracking-[0.14em] text-ink-faint uppercase">
-              Bounty
+              Recompensa
             </p>
             <p className="mt-0.5 text-[15px] font-semibold tracking-tight text-ink">
-              {compactNumber(program.bountyMin)} – {compactNumber(program.bountyMax)}{' '}
-              <span className="text-[12px] font-medium text-ink-muted">
-                {employer.currency.code}
-              </span>
+              {formatUsdShort(program.bountyMin)} – {formatUsd(program.bountyMax)}
             </p>
           </div>
 
@@ -109,10 +106,10 @@ export function ProgramCard({ program, onOpen, compact, className }: ProgramCard
               style={{ color: closingSoon ? 'var(--solv-delta-down)' : 'var(--solv-ink-muted)' }}
             >
               <Icon name="clock" size={13} />
-              {days} days left
+              {days === 0 ? 'cerrada' : `quedan ${days} días`}
             </p>
             <p className="mt-0.5 text-[11px] text-ink-faint">
-              {program.submissions} reports · closes {formatDate(program.deadline)}
+              {program.submissions} reportes · cierra el {formatDate(program.deadline)}
             </p>
           </div>
         </div>
@@ -126,7 +123,7 @@ export function ProgramCard({ program, onOpen, compact, className }: ProgramCard
             trailingIcon="chevron-right"
             onClick={() => onOpen(program)}
           >
-            Open brief
+            Abrir convocatoria
           </Button>
         )}
       </div>

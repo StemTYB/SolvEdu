@@ -1,7 +1,7 @@
 import { Icon } from '@/components/ui/Icon'
 import { Meter } from '@/components/ui/Meter'
 import { CURRENT_USER } from '@/data/user'
-import { cn } from '@/lib/format'
+import { cn, formatNumber } from '@/lib/format'
 import { tierFor } from '@/lib/presentation'
 import { NAV_GROUPS, type RouteId } from '@/lib/routes'
 
@@ -23,7 +23,7 @@ function BrandMark() {
           SolvEDU
         </span>
         <span className="mt-1 block truncate text-[11px] text-ink-faint">
-          Bounty platform for student researchers
+          Recompensas para estudiantes investigadores
         </span>
       </span>
     </div>
@@ -32,7 +32,7 @@ function BrandMark() {
 
 function NavList({ route, onNavigate }: Pick<SidebarProps, 'route' | 'onNavigate'>) {
   return (
-    <nav className="flex-1 space-y-6 overflow-y-auto px-2 py-4" aria-label="Primary">
+    <nav className="flex-1 space-y-6 overflow-y-auto px-2 py-4" aria-label="Navegación principal">
       {NAV_GROUPS.map((group) => (
         <div key={group.label}>
           <p className="px-3 pb-2 text-[10.5px] font-semibold tracking-[0.15em] text-ink-faint uppercase">
@@ -93,8 +93,8 @@ function TierCard() {
       <Meter value={tier.progress} className="mt-3" />
       <p className="mt-2 text-[11px] leading-snug text-ink-faint">
         {tier.next
-          ? `${(CURRENT_USER.nextTierAt - CURRENT_USER.reputation).toLocaleString('en-US')} reputation to ${tier.next}`
-          : 'Highest tier reached'}
+          ? `${formatNumber(CURRENT_USER.nextTierAt - CURRENT_USER.reputation)} de reputación para ${tier.next}`
+          : 'Nivel máximo alcanzado'}
       </p>
     </div>
   )
@@ -130,7 +130,7 @@ export function Sidebar({ route, onNavigate, open, onClose }: SidebarProps) {
         <button
           type="button"
           tabIndex={open ? 0 : -1}
-          aria-label="Close navigation"
+          aria-label="Cerrar navegación"
           onClick={onClose}
           className={cn(
             'absolute inset-0 bg-black/45 backdrop-blur-sm transition-opacity duration-250',
@@ -148,7 +148,7 @@ export function Sidebar({ route, onNavigate, open, onClose }: SidebarProps) {
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close navigation"
+              aria-label="Cerrar navegación"
               className="grid size-9 shrink-0 place-items-center rounded-xl text-ink-muted hover:bg-glass-soft hover:text-ink"
             >
               <Icon name="close" size={18} />

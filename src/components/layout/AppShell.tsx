@@ -52,9 +52,11 @@ export function AppShell({ route, onNavigate, query, onQueryChange, children }: 
 
           <footer className="px-4 pb-8 sm:px-6 lg:px-8">
             <div className="mx-auto flex w-full max-w-[1440px] flex-wrap items-center gap-x-4 gap-y-2 text-[11.5px] text-ink-faint">
-              <span>SolvEDU — a fictional platform for demonstration purposes.</span>
-              <span className="hidden sm:inline">Safe Harbor v4.2 in effect.</span>
-              <span className="ml-auto">All companies, universities and rewards are invented.</span>
+              <span>SolvEDU — plataforma ficticia con fines de demostración.</span>
+              <span className="hidden sm:inline">Política de Puerto seguro v4.2 en vigor.</span>
+              <span className="ml-auto">
+                Todas las empresas, universidades y recompensas son inventadas.
+              </span>
             </div>
           </footer>
         </div>

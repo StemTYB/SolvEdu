@@ -29,7 +29,7 @@ export function Delta({ value, period, goodWhenUp = true, className }: DeltaProp
         size={13}
         style={{ color: tone }}
       />
-      <span style={{ color: tone }}>{isFlat ? 'no change' : signedPercent(value)}</span>
+      <span style={{ color: tone }}>{isFlat ? 'sin cambios' : signedPercent(value)}</span>
       <span className="font-normal text-ink-faint">{period}</span>
     </span>
   )
@@ -81,7 +81,7 @@ export function StatTile({
             points={trend}
             tone={trendTone}
             invert={invertTrend}
-            label={`${label} over the last twelve months`}
+            label={`${label} en los últimos doce meses`}
             width={104}
             height={44}
             className="mt-1 hidden shrink-0 sm:block"

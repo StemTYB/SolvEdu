@@ -2,34 +2,29 @@ export type CompanyId = 'stark' | 'wayne' | 'umbrella' | 'aperture' | 'oscorp'
 
 export type UniversityId = 'monsters' | 'hogwarts' | 'xavier' | 'miskatonic' | 'gotham'
 
-export type Severity = 'Informational' | 'Low' | 'Medium' | 'High' | 'Critical'
+export type Severity = 'Informativa' | 'Baja' | 'Media' | 'Alta' | 'Crítica'
 
 /** Workflow state of a report — an ordered pipeline, not a severity. */
-export type SubmissionState = 'Pending' | 'Triaged' | 'Accepted' | 'Duplicated' | 'Paid'
+export type SubmissionState = 'Pendiente' | 'Triaje' | 'Aceptado' | 'Duplicado' | 'Pagado'
 
-export type Scope = 'Web Surface' | 'Firmware' | 'Protocol' | 'Physical Access' | 'Pure Research'
+export type Scope =
+  | 'Superficie web'
+  | 'Firmware'
+  | 'Protocolo'
+  | 'Acceso físico'
+  | 'Investigación pura'
 
-export type Difficulty = 'Intro' | 'Intermediate' | 'Advanced' | 'Elite'
+export type Difficulty = 'Inicial' | 'Intermedia' | 'Avanzada' | 'Élite'
 
 export type Category =
-  | 'Cryptography'
-  | 'Robotics'
-  | 'Biotech'
-  | 'Aerospace'
-  | 'AI & Autonomy'
-  | 'Energy Grid'
-  | 'Arcane Systems'
-  | 'Materials'
-
-/**
- * A settlement unit. `SC` is the platform ledger unit; every company currency
- * escrows and settles 1:1 against it, so cross-company totals are additive.
- */
-export interface Currency {
-  code: string
-  name: string
-  glyph: string
-}
+  | 'Criptografía'
+  | 'Robótica'
+  | 'Biotecnología'
+  | 'Aeroespacial'
+  | 'IA y autonomía'
+  | 'Red eléctrica'
+  | 'Sistemas arcanos'
+  | 'Materiales'
 
 export interface Company {
   id: CompanyId
@@ -39,7 +34,7 @@ export interface Company {
   tagline: string
   /** Identity mark colour. Always accompanied by the name — never meaning alone. */
   accent: string
-  currency: Currency
+  /** Total USD the company has committed to escrow across its open programmes. */
   escrowFunded: number
   openPrograms: number
   /** Median hours from submission to first human triage. */
@@ -65,7 +60,9 @@ export interface Program {
   summary: string
   category: Category
   stack: string[]
+  /** Award floor in USD. Bands scale with difficulty: 100 at Inicial, 3,000 at Élite. */
   bountyMin: number
+  /** Award ceiling in USD. */
   bountyMax: number
   scope: Scope
   difficulty: Difficulty
@@ -90,8 +87,8 @@ export interface Submission {
   cvss: number
   submittedAt: string
   updatedAt: string
+  /** Award in USD. Zero until a triager sets the band. */
   payout: number
-  currencyCode: string
   hash: string
   note?: string
 }
@@ -102,7 +99,7 @@ export interface LeaderboardEntry {
   displayName: string
   universityId: UniversityId
   reputation: number
-  /** Lifetime settled rewards, normalised to the ledger unit. */
+  /** Lifetime settled awards in USD. */
   earned: number
   validReports: number
   /** Valid ÷ (valid + invalid + duplicate). */
@@ -113,7 +110,13 @@ export interface LeaderboardEntry {
   isCurrentUser?: boolean
 }
 
-export type NotificationKind = 'payout' | 'triage' | 'program' | 'rank' | 'duplicate' | 'system'
+export type NotificationKind =
+  | 'pago'
+  | 'triaje'
+  | 'programa'
+  | 'rango'
+  | 'duplicado'
+  | 'sistema'
 
 export interface AppNotification {
   id: string
@@ -130,13 +133,13 @@ export interface MonthlyEarnings {
   /** `YYYY-MM`, so the series stays sortable regardless of display format. */
   period: string
   label: string
+  /** Settled USD in that month. */
   amount: number
   payouts: number
 }
 
 export interface WalletAccount {
   companyId: CompanyId
-  currency: Currency
   /** Awarded, awaiting the escrow release window. */
   pending: number
   /** Cleared and withdrawable. */
@@ -146,7 +149,7 @@ export interface WalletAccount {
   settleDays: number
 }
 
-export type PayoutState = 'Processing' | 'Cleared' | 'Held' | 'Scheduled'
+export type PayoutState = 'En proceso' | 'Liquidado' | 'Retenido' | 'Programado'
 
 export interface Payout {
   id: string
@@ -154,7 +157,6 @@ export interface Payout {
   submissionId: string
   title: string
   amount: number
-  currencyCode: string
   state: PayoutState
   requestedAt: string
   settlesAt: string
@@ -168,9 +170,9 @@ export interface HacktivityEvent {
   companyId: CompanyId
   programTitle: string
   severity: Severity
-  state: Extract<SubmissionState, 'Triaged' | 'Accepted' | 'Paid'>
+  state: Extract<SubmissionState, 'Triaje' | 'Aceptado' | 'Pagado'>
+  /** Award in USD. Zero while it is still awaiting triage. */
   payout: number
-  currencyCode: string
   summary: string
   upvotes: number
   disclosed: boolean
@@ -180,7 +182,7 @@ export interface Badge {
   id: string
   name: string
   description: string
-  tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum'
+  tier: 'Bronce' | 'Plata' | 'Oro' | 'Platino'
   glyph: string
   earnedAt?: string
   /** Progress toward earning, 0–1. Absent once earned. */
@@ -217,7 +219,7 @@ export interface TrendPoint {
 export interface ResourceDoc {
   id: string
   title: string
-  category: 'Policy' | 'Guideline' | 'Playbook' | 'Reference'
+  category: 'Política' | 'Directriz' | 'Guía práctica' | 'Referencia'
   summary: string
   updatedAt: string
   readMinutes: number

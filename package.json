@@ -3,12 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "SolvEDU — technical bounty hunter platform connecting world-class companies with top-tier student researchers.",
+  "description": "SolvEDU — plataforma de recompensas por hallazgos técnicos que conecta empresas de primer nivel con estudiantes investigadores. Todas las recompensas se pagan en dólares estadounidenses (USD).",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "verify": "node scripts/verify-ledger.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",

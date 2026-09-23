@@ -11,12 +11,12 @@ import type { NotificationKind } from '@/data/types'
 import { ROUTE_TITLES, type RouteId } from '@/lib/routes'
 
 const NOTIFICATION_ICON: Record<NotificationKind, IconName> = {
-  payout: 'coins',
-  triage: 'eye',
-  program: 'target',
-  rank: 'trophy',
-  duplicate: 'copy',
-  system: 'info',
+  pago: 'coins',
+  triaje: 'eye',
+  programa: 'target',
+  rango: 'trophy',
+  duplicado: 'copy',
+  sistema: 'info',
 }
 
 interface TopbarProps {
@@ -66,7 +66,7 @@ export function Topbar({
         <button
           type="button"
           onClick={onOpenNav}
-          aria-label="Open navigation"
+          aria-label="Abrir navegación"
           className="grid size-9 shrink-0 place-items-center rounded-xl text-ink-muted hover:bg-glass-soft hover:text-ink lg:hidden"
         >
           <Icon name="menu" size={19} />
@@ -78,7 +78,7 @@ export function Topbar({
         </p>
 
         <label className="group relative flex min-w-0 flex-1 items-center">
-          <span className="sr-only">Search programs, companies and researchers</span>
+          <span className="sr-only">Busca programas, empresas e investigadores</span>
           <Icon
             name="search"
             size={17}
@@ -89,7 +89,7 @@ export function Topbar({
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             onFocus={() => onNavigate('programs')}
-            placeholder="Search programs, companies, stacks…"
+            placeholder="Busca programas, empresas, stacks…"
             className={cn(
               'h-9 w-full rounded-xl border border-hairline-soft bg-glass-soft pr-3 pl-9 text-[13px] text-ink',
               'placeholder:text-ink-faint focus:border-[var(--solv-brand)] focus:bg-glass focus:outline-none',
@@ -101,14 +101,14 @@ export function Topbar({
         <div className="flex shrink-0 items-center gap-0.5">
           <IconButton
             icon={theme === 'dark' ? 'sun' : 'moon'}
-            label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            label={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
             onClick={onToggleTheme}
           />
 
           <div className="relative">
             <IconButton
               icon="bell"
-              label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+              label={unread ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'}
               active={notificationsOpen}
               onClick={openNotifications}
             />
@@ -132,9 +132,9 @@ export function Topbar({
                 />
                 <div className="glass absolute right-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl">
                   <div className="flex items-center justify-between border-b border-hairline-soft px-4 py-3">
-                    <h2 className="text-[13px] font-semibold text-ink">Notifications</h2>
+                    <h2 className="text-[13px] font-semibold text-ink">Notificaciones</h2>
                     <span className="text-[11.5px] text-ink-faint">
-                      {NOTIFICATIONS.length} recent
+                      {NOTIFICATIONS.length} recientes
                     </span>
                   </div>
                   <ul className="max-h-[22rem] overflow-y-auto">

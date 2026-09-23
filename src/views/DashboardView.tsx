@@ -23,17 +23,17 @@ import {
 import { CURRENT_USER } from '@/data/user'
 import { university } from '@/data/universities'
 import { PAYOUT_STATE_META, STATE_META, tierFor } from '@/lib/presentation'
-import { compactNumber, formatDate, percent, relativeTime } from '@/lib/format'
+import { formatDate, formatNumber, formatUsd, formatUsdShort, percent, relativeTime } from '@/lib/format'
 import type { NotificationKind } from '@/data/types'
 import type { RouteId } from '@/lib/routes'
 
 const NOTIFICATION_ICON: Record<NotificationKind, IconName> = {
-  payout: 'coins',
-  triage: 'eye',
-  program: 'target',
-  rank: 'trophy',
-  duplicate: 'copy',
-  system: 'info',
+  pago: 'coins',
+  triaje: 'eye',
+  programa: 'target',
+  rango: 'trophy',
+  duplicado: 'copy',
+  sistema: 'info',
 }
 
 interface DashboardViewProps {
@@ -43,7 +43,7 @@ interface DashboardViewProps {
 export function DashboardView({ onNavigate }: DashboardViewProps) {
   const counts = submissionStateCounts()
   const recommended = [...PROGRAMS].sort((a, b) => b.match - a.match).slice(0, 3)
-  const nextPayout = PAYOUTS.find((payout) => payout.state === 'Processing') ?? PAYOUTS[0]
+  const nextPayout = PAYOUTS.find((payout) => payout.state === 'En proceso') ?? PAYOUTS[0]
   const tier = tierFor(CURRENT_USER.reputation)
   const school = university(CURRENT_USER.universityId)
 
@@ -52,21 +52,25 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
     .slice(0, 4)
 
   const openReports = SUBMISSIONS.filter(
-    (item) => item.state === 'Pending' || item.state === 'Triaged',
+    (item) => item.state === 'Pendiente' || item.state === 'Triaje',
   ).length
 
   const reputationDelta = ((8_420 - 7_940) / 7_940) * 100
   const rankDelta = ((7 - 10) / 10) * 100
   const accuracyDelta = ((0.804 - 0.77) / 0.77) * 100
 
+  // The sparkline's peak comes from the series, not a literal, so the caption
+  // and the drawn line can never disagree.
+  const peakEarnings = Math.max(...EARNINGS_TREND.map((point) => point.value))
+
   return (
     <>
       <ViewHeader
-        title="Dashboard"
-        description="Your position across every programme — what has settled, where you stand, and what needs attention this week."
+        title="Panel"
+        description="Tu posición en todos los programas: lo que ya se ha liquidado, dónde estás y qué requiere atención esta semana."
         action={
           <Chip size="sm" icon="refresh">
-            Updated 04:00 UTC
+            Actualizado a las 04:00 UTC
           </Chip>
         }
       />
@@ -83,35 +87,35 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
             <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-ink-muted">
               <Icon name="sparkles" size={15} className="text-brand-ink" />
               <span>
-                Welcome back, {CURRENT_USER.displayName.split(' ')[0]} — {school.name}
+                Bienvenido de nuevo, {CURRENT_USER.displayName.split(' ')[0]} — {school.name}
               </span>
             </div>
 
             <div className="mt-6 flex flex-wrap items-end justify-between gap-6">
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold tracking-[0.16em] text-ink-faint uppercase">
-                  Lifetime settled reward
+                  Recompensa liquidada histórica
                 </p>
                 {/*
                   The one hero figure on this view. Proportional figures on
                   purpose — tabular-nums reads loose at display sizes.
                 */}
                 <p className="mt-2 text-[48px] leading-none font-bold tracking-tight text-ink sm:text-[56px]">
-                  {LIFETIME_EARNINGS.toLocaleString('en-US')}
+                  {formatUsdShort(LIFETIME_EARNINGS)}
                   <span className="ml-2 text-[20px] font-semibold text-ink-muted sm:text-[24px]">
-                    SC
+                    USD
                   </span>
                 </p>
                 <p className="mt-3 text-[13px] text-ink-muted">
-                  Across {LIFETIME_PAYOUTS} settled awards in 5 company currencies, normalised to
-                  the ledger unit.
+                  Repartidos en {LIFETIME_PAYOUTS} recompensas liquidadas con las cinco empresas
+                  cliente.
                 </p>
               </div>
 
               <div className="shrink-0">
                 <svg
                   role="img"
-                  aria-label="Settled reward over the last twelve months, rising to 31,600 SC in August"
+                  aria-label={`Recompensa liquidada en los últimos doce meses, con un máximo de ${formatUsd(peakEarnings)}`}
                   width={252}
                   height={78}
                   viewBox="0 0 252 78"
@@ -161,39 +165,39 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   })()}
                 </svg>
                 <p className="mt-1 text-right text-[11px] text-ink-faint">
-                  Last 12 months · peak {compactNumber(31_600)} SC
+                  Últimos 12 meses · máximo {formatUsd(peakEarnings)}
                 </p>
               </div>
             </div>
 
             <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-hairline-soft pt-5 sm:grid-cols-3">
               <div>
-                <dt className="text-[11.5px] text-ink-muted">In escrow</dt>
+                <dt className="text-[11.5px] text-ink-muted">En depósito</dt>
                 <dd className="mt-1 text-[17px] font-semibold text-ink">
-                  {compactNumber(PENDING_TOTAL)} SC
+                  {formatUsd(PENDING_TOTAL)}
                 </dd>
               </div>
               <div>
-                <dt className="text-[11.5px] text-ink-muted">Withdrawable</dt>
+                <dt className="text-[11.5px] text-ink-muted">Retirable</dt>
                 <dd className="mt-1 text-[17px] font-semibold text-ink">
-                  {compactNumber(AVAILABLE_TOTAL)} SC
+                  {formatUsd(AVAILABLE_TOTAL)}
                 </dd>
               </div>
               <div>
-                <dt className="text-[11.5px] text-ink-muted">Active streak</dt>
+                <dt className="text-[11.5px] text-ink-muted">Racha activa</dt>
                 <dd className="mt-1 inline-flex items-center gap-1.5 text-[17px] font-semibold text-ink">
                   <Icon name="flame" size={16} className="text-brand-ink" />
-                  {CURRENT_USER.streakWeeks} weeks
+                  {CURRENT_USER.streakWeeks} semanas
                 </dd>
               </div>
             </dl>
 
             <div className="mt-6 flex flex-wrap gap-2.5">
               <Button variant="primary" icon="target" onClick={() => onNavigate('programs')}>
-                Browse programs
+                Explorar programas
               </Button>
               <Button icon="upload" onClick={() => onNavigate('submit')}>
-                Submit a report
+                Enviar un reporte
               </Button>
             </div>
           </div>
@@ -204,7 +208,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
           <Panel className="p-5">
             <div className="flex items-center gap-2 text-ink-muted">
               <Icon name="coins" size={15} />
-              <span className="text-[12.5px] font-medium">Next payout</span>
+              <span className="text-[12.5px] font-medium">Próximo pago</span>
             </div>
 
             {nextPayout && (
@@ -220,16 +224,14 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                       {company(nextPayout.companyId).name}
                     </p>
                     <p className="truncate text-[11.5px] text-ink-faint">
-                      {nextPayout.submissionId} · {nextPayout.currencyCode}
+                      {nextPayout.submissionId} · solicitado el {formatDate(nextPayout.requestedAt)}
                     </p>
                   </div>
                 </div>
 
                 <p className="mt-4 text-[30px] leading-none font-bold tracking-tight text-ink">
-                  {compactNumber(nextPayout.amount)}
-                  <span className="ml-1.5 text-[15px] font-semibold text-ink-muted">
-                    {nextPayout.currencyCode}
-                  </span>
+                  {formatUsdShort(nextPayout.amount)}
+                  <span className="ml-1.5 text-[15px] font-semibold text-ink-muted">USD</span>
                 </p>
 
                 <div className="mt-3 inline-flex items-center gap-1.5 text-[12px]">
@@ -239,7 +241,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                     style={{ color: PAYOUT_STATE_META[nextPayout.state].tone }}
                   />
                   <span className="text-ink-muted">
-                    {nextPayout.state} · settles {formatDate(nextPayout.settlesAt, true)}
+                    {nextPayout.state} · se libera el {formatDate(nextPayout.settlesAt, true)}
                   </span>
                 </div>
               </>
@@ -252,14 +254,14 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               trailingIcon="chevron-right"
               onClick={() => onNavigate('wallet')}
             >
-              Open wallet
+              Abrir cartera
             </Button>
           </Panel>
 
           <Panel className="flex-1 p-5">
             <div className="flex items-center gap-2 text-ink-muted">
               <Icon name="shield" size={15} />
-              <span className="text-[12.5px] font-medium">Reputation tier</span>
+              <span className="text-[12.5px] font-medium">Rango de reputación</span>
             </div>
             <p className="mt-3 text-[15px] font-semibold text-ink">{tier.current}</p>
             <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-brand-wash">
@@ -270,15 +272,15 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
             </div>
             <p className="mt-2.5 text-[11.5px] leading-snug text-ink-faint">
               {tier.next
-                ? `${(CURRENT_USER.nextTierAt - CURRENT_USER.reputation).toLocaleString('en-US')} reputation to ${tier.next}.`
-                : 'Highest tier reached.'}
+                ? `${formatNumber(CURRENT_USER.nextTierAt - CURRENT_USER.reputation)} de reputación para ${tier.next}.`
+                : 'Rango máximo alcanzado.'}
             </p>
             <button
               type="button"
               onClick={() => onNavigate('leaderboard')}
               className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-brand-ink hover:underline"
             >
-              See the standings
+              Ver la clasificación
               <Icon name="chevron-right" size={14} />
             </button>
           </Panel>
@@ -286,40 +288,40 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
       </section>
 
       {/* ---------------------------------------------------------- Stat tiles */}
-      <section aria-label="Key metrics" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Métricas clave" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatTile
-          label="Reputation"
-          value={compactNumber(CURRENT_USER.reputation)}
+          label="Reputación"
+          value={formatNumber(CURRENT_USER.reputation)}
           icon="shield"
           caption={tier.current}
-          delta={{ value: reputationDelta, period: 'vs last 30 days' }}
+          delta={{ value: reputationDelta, period: 'frente a los últimos 30 días' }}
           trend={REPUTATION_TREND}
           trendTone="var(--viz-series-1)"
         />
         <StatTile
-          label="Global rank"
+          label="Puesto global"
           value={`#${CURRENT_USER.rank}`}
           icon="trophy"
-          caption={`of ${compactNumber(CURRENT_USER.rankPool)} solvers`}
-          delta={{ value: rankDelta, period: 'vs last 30 days', goodWhenUp: false }}
+          caption={`de ${formatNumber(CURRENT_USER.rankPool)} investigadores`}
+          delta={{ value: rankDelta, period: 'frente a los últimos 30 días', goodWhenUp: false }}
           trend={RANK_TREND}
           trendTone="var(--viz-series-1)"
           invertTrend
         />
         <StatTile
-          label="Acceptance rate"
+          label="Tasa de aceptación"
           value={percent(CURRENT_USER.validReports / (CURRENT_USER.validReports + CURRENT_USER.invalidReports + CURRENT_USER.duplicates), 1)}
           icon="check-circle"
-          caption={`${CURRENT_USER.validReports} valid · ${CURRENT_USER.invalidReports} invalid · ${CURRENT_USER.duplicates} duplicate`}
-          delta={{ value: accuracyDelta, period: 'vs last 30 days' }}
+          caption={`${CURRENT_USER.validReports} válidos · ${CURRENT_USER.invalidReports} inválidos · ${CURRENT_USER.duplicates} duplicados`}
+          delta={{ value: accuracyDelta, period: 'frente a los últimos 30 días' }}
           trend={ACCURACY_TREND}
           trendTone="var(--viz-series-1)"
         />
         <StatTile
-          label="Open reports"
+          label="Reportes abiertos"
           value={String(openReports)}
           icon="inbox"
-          caption="Awaiting triage or payout"
+          caption="A la espera de triaje o de pago"
           trend={SUBMISSIONS_TREND}
           trendTone="var(--viz-series-1)"
         />
@@ -330,13 +332,13 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
         <div className="space-y-5 xl:col-span-2">
           <Panel className="p-5 sm:p-6">
             <PanelHeader
-              title="Recommended programs"
-              description="Ranked by fit against your accepted findings, stacks and category history."
+              title="Programas recomendados"
+              description="Ordenados por afinidad con tus hallazgos aceptados, tus stacks y tu historial de categorías."
               icon={<Icon name="target" size={17} />}
               className="px-0 pt-0"
               action={
                 <Button size="sm" variant="ghost" trailingIcon="chevron-right" onClick={() => onNavigate('programs')}>
-                  All 149
+                  Todos ({PROGRAMS.length})
                 </Button>
               }
             />
@@ -355,13 +357,13 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
 
           <Panel className="p-5 sm:p-6">
             <PanelHeader
-              title="Report pipeline"
-              description={`${SUBMISSIONS.length} reports filed this cycle, by current state.`}
+              title="Proceso de reportes"
+              description={`${SUBMISSIONS.length} reportes presentados en este ciclo, por estado actual.`}
               icon={<Icon name="activity" size={17} />}
               className="px-0 pt-0"
               action={
                 <Button size="sm" variant="ghost" trailingIcon="chevron-right" onClick={() => onNavigate('submissions')}>
-                  Details
+                  Detalles
                 </Button>
               }
             />
@@ -377,12 +379,12 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
         <div className="space-y-5">
           <Panel className="p-5">
             <PanelHeader
-              title="Recent notifications"
+              title="Notificaciones recientes"
               icon={<Icon name="bell" size={17} />}
               className="px-0 pt-0"
               action={
                 <span className="rounded-full bg-brand-wash px-2 py-0.5 text-[11px] font-semibold text-brand-ink">
-                  {NOTIFICATIONS.filter((item) => !item.read).length} new
+                  {NOTIFICATIONS.filter((item) => !item.read).length} nuevas
                 </span>
               }
             />
@@ -405,7 +407,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                         </span>
                         {!item.read && (
                           <span
-                            aria-label="Unread"
+                            aria-label="Sin leer"
                             className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand"
                           />
                         )}
@@ -422,8 +424,8 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
 
           <Panel className="p-5">
             <PanelHeader
-              title="Recent activity"
-              description="Latest movement on your reports."
+              title="Actividad reciente"
+              description="Últimos movimientos en tus reportes."
               icon={<Icon name="clock" size={17} />}
               className="px-0 pt-0"
             />
@@ -463,11 +465,11 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 size="xs"
               />
               <p className="text-[11.5px] text-ink-faint">
-                Rank #{CURRENT_USER.rank} · {CURRENT_USER.streakWeeks}-week streak
+                Puesto n.º {CURRENT_USER.rank} · racha de {CURRENT_USER.streakWeeks} semanas
               </p>
               <Delta
                 value={rankDelta}
-                period="30d"
+                period="30 d"
                 goodWhenUp={false}
                 className="ml-auto shrink-0"
               />
